@@ -44,14 +44,23 @@ class Appointment(models.Model):
     def title(self):
         return f"{self.patient.name} at {self.snf.name} on {self.date:%Y-%m-%d}"
 
+    def __str__(self):
+        return self.title
+
 class AppointmentNote(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, verbose_name="Appointment")
     text = models.TextField(verbose_name="Note Text")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
+    def __str__(self):
+        return self.text[:50]
+
 class PatientNote(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="Patient")
     text = models.TextField(verbose_name="Note Text")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
+
+    def __str__(self):
+        return self.text[:50]
