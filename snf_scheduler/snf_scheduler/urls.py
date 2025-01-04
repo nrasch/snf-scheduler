@@ -19,5 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/scheduler/', include('scheduler.urls')),  # Adjust 'scheduler' to your app name
+    path('auth/', include('authentication.urls')),
+    path('api/scheduler/', include('scheduler.urls')),
 ]
