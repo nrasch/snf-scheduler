@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from .models import SNF, Patient, Appointment, AppointmentNote, PatientNote
 from .serializers import SNFSerializer, PatientSerializer, AppointmentSerializer, AppointmentNoteSerializer, PatientNoteSerializer
 from rest_framework import generics
+from knox.auth import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 @api_view(['GET'])
 def api_root(request, format=None):
@@ -16,6 +18,8 @@ def api_root(request, format=None):
     })
 
 class SNFListCreate(generics.ListCreateAPIView):
+    #authentication_classes = [TokenAuthentication]  # If not set as default in settings
+    permission_classes = [IsAuthenticated]
     queryset = SNF.objects.all()
     serializer_class = SNFSerializer
 

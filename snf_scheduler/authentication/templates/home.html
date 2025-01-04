@@ -9,7 +9,9 @@
 
 {% if user.is_authenticated %}
     <p>Welcome, {{ user.username }}!</p>
-    <p>You API key is:  </p>
+    {% if token %}
+        <p>Your Knox Token: {{ token }}</p>
+    {% endif %}
 {% else %}
     <p>Welcome, guest!</p>
 {% endif %}
