@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SNF Scheduler{% endblock %}</title>
+
+    <!-- Load all the static resources -->
+    {% load static %}
+
+    <!-- Bootstrap CSS and Icons -->
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    {% bootstrap_messages %}
+    {% load bootstrap_icons %}
+
+    <!-- Default template CSS -->
+    <link rel="stylesheet" href="{% static 'authentication/css/base.css' %}">
+
+    <!-- Child template style elements -->
+    {% block styles %}
+    {% endblock %}
+</head>
+<body>
+    <div class="wrapper">
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            </nav>
+        </header>
+
+        <div class="content-wrapper">
+            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+                <div class="position-sticky pt-3">
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                {% block content %}
+                <h1>Main Content Area</h1>
+                <p>Welcome to the main content area where you'll put your dynamic content.</p>
+                {% endblock %}
+            </main>
+        </div>
+
+        <footer class="footer mt-auto py-3 bg-light">
+            <div class="container">
+                <span class="text-muted">&copy; 2024 Nathan Rasch</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS -->
+    {% bootstrap_javascript %}
+    {% block scripts %}
+    {% endblock %}
+</body>
+</html>

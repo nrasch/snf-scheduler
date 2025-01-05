@@ -1,0 +1,65 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% load bootstrap5 %}
+{% load bootstrap_icons %}
+
+{% block title %}SNF Scheduler - Token Management{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p class="h2"><span class="text-primary">API Token Management</p>
+</div>
+
+{% if token_created %}
+<div class="container mt-5">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="alert alert-info mt-3">
+                <p>The following new API token has been generated for you:</p>
+                <code class="text-break">
+                    <ul><li>{{ token }}</li></ul>
+                </code>
+                <p>Include your token in the Authorization header of your requests like this to use it:</p>
+                <code class="text-break">
+                    <ul><li>Authorization: Token &lt;your_token_here&gt;</li></ul>
+                </code>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="container mt-5">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="alert alert-info mt-3">
+                <p>You have the following active API tokens (showing hashes):</p>
+                <code class="text-break">
+                <ul>
+                    {% if tokens %}
+                        {% for t in tokens %}
+                            <li>{{ t }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>No tokens found</li>
+                    {% endif %}
+                </ul>
+                </code>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="container mt-5">
+    <form method="post" action="{% url 'authentication:tokens' %}">
+        {% csrf_token %}
+        <p>
+            {% if tokens or token_created %}
+                <button type="submit" class="btn btn-warning" name="action" value="delete">Expire all tokens</button>
+            {% endif %}
+            <button type="submit" class="btn btn-success" name="action" value="create">Create new token</button>
+        </p>
+    </form>
+</div>
+{% endblock %}

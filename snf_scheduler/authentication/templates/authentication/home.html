@@ -1,0 +1,29 @@
+{% extends "authentication/base.html" %}
+{% load static %}
+
+{% load bootstrap5 %}
+{% load bootstrap_icons %}
+
+{% block title %}SNF Scheduler - Home{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if user.is_authenticated %}
+        <p class="h2"><span class="text-primary">Welcome, {{ user.username }}!</p>
+    {% endif %}
+</div>
+
+{% if token %}
+<div class="container mt-5">
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="alert alert-info mt-3">
+                <p>Your Knox Token:</p>
+                <code class="text-break">{{ token }}</code>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
