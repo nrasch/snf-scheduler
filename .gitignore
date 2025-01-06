@@ -3,3 +3,5 @@
 /snf_scheduler/scheduler/migrations/__pycache__
 /snf_scheduler/snf_scheduler/__pycache__
 /snf_scheduler/authentication/__pycache__
+/.idea
+/snf_scheduler/staticfiles
