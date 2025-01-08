@@ -1,0 +1,36 @@
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+.wrapper {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
+    flex: 1;
+    display: flex; /* Use flexbox for the content area */
+}
+
+.sidebar {
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1; /* Main content takes up remaining space */
+    overflow: auto; /* Allow scrolling if content overflows */
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Adjust sidebar height to fill the space */
+.sidebar .position-sticky {
+    height: 100%; /* Fill the sidebar container */
+    overflow-y: auto; /* Allow scrolling if content overflows */
+}

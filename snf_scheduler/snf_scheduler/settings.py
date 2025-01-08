@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'bootstrap5',
     'django_bootstrap_icons',
     'holidays',
+    'main',
 ]
 
 MIDDLEWARE = [
@@ -133,6 +134,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Development - Appending app-specific static directories
 STATICFILES_DIRS += [
+    os.path.join(BASE_DIR, 'main', 'static'),
     os.path.join(BASE_DIR, 'authentication', 'static'),
     os.path.join(BASE_DIR, 'scheduler', 'static'),
     # Add other apps here...
@@ -153,5 +155,5 @@ REST_FRAMEWORK = {
 }
 
 LOGIN_URL = 'authentication:login'
-LOGIN_REDIRECT_URL = 'authentication:home'
+LOGIN_REDIRECT_URL = 'main:home'
 LOGOUT_REDIRECT_URL = 'authentication:login'

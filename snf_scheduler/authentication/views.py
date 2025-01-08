@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 def user_login(request):
     # If user is already logged in redirect to home page
     if request.user.is_authenticated:
-        return redirect('authentication:home')
+        return redirect('main:home')
 
     # If user is not logged in and request method is POST, try to log in the user
     if request.method == 'POST':
@@ -22,7 +22,7 @@ def user_login(request):
                 # If user is not None, log in the user
                 login(request, user)
                 # Redirect to the home page
-                return redirect('authentication:home')  # Assuming 'home' is a name of your home URL
+                return redirect('main:home')  # Assuming 'home' is a name of your home URL
     else:
         form = AuthenticationForm()
     return render(request, 'authentication/login.html', {'form': form})
@@ -31,10 +31,6 @@ def user_logout(request):
     messages.add_message(request, messages.INFO, "You have been logged out.  So long and thanks for all the fish.")
     logout(request)
     return redirect('authentication:login')
-
-def home(request):
-    context = {}
-    return render(request, 'authentication/home.html', context)
 
 # Ref https://docs.djangoproject.com/en/5.1/topics/auth/default/#limiting-access-to-logged-in-users
 @login_required
