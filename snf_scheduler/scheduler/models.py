@@ -1,5 +1,6 @@
 from django.db import models
 import datetime
+from .validators import CustomValidators
 
 # Create your models here.
 class SNF(models.Model):
@@ -36,7 +37,8 @@ class Patient(models.Model):
 class Appointment(models.Model):
     snf = models.ForeignKey(SNF, on_delete=models.CASCADE, verbose_name="Associated SNF")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="Patient")
-    date = models.DateTimeField(verbose_name="Appointment Date")
+    date = models.DateTimeField(verbose_name="Appointment Date",
+                                validators=[CustomValidators.validate_holiday, CustomValidators.validate_not_weekend])
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
@@ -46,6 +48,11 @@ class Appointment(models.Model):
 
     def __str__(self):
         return self.title
+
+    def clean(self):
+        # Ensure we don't have a duplicate appointment for the same patient at the same SNF on the same date
+        CustomValidators.validate_unique_appointment(self.snf.id, self.patient.id, self.date)
+
 
 class AppointmentNote(models.Model):
     appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE, verbose_name="Appointment")

@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-ljh&gv$y)ntk#xr*so(swvnqo^r!v!t3kw62n30$7z-+l#5l(g
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'authentication',
     'scheduler',
     'bootstrap5',
-    'django_bootstrap_icons'
+    'django_bootstrap_icons',
+    'holidays',
 ]
 
 MIDDLEWARE = [

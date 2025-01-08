@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from .models import SNF, Patient, Appointment, AppointmentNote, PatientNote
+from .validators import CustomValidators
+from django.core.exceptions import ValidationError
 
 class SNFSerializer(serializers.HyperlinkedModelSerializer):
     patients = serializers.HyperlinkedRelatedField(many=True, view_name='patient-detail', read_only=True)
@@ -42,16 +44,34 @@ class AppointmentNoteSerializer(serializers.HyperlinkedModelSerializer):
 
 class AppointmentSerializer(serializers.HyperlinkedModelSerializer):
     # Forward From the ForeignKey (FFF) (i.e. forward relationship)
-    patient = PatientSerializer(read_only=True)
-    snf = SNFSerializer(read_only=True)
+    #patient = PatientSerializer(read_only=True)
+    #snf = SNFSerializer(read_only=True)
+    # Use PrimaryKeyRelatedField for foreign keys, so we can create new appointments with just the ID
+    snf = serializers.PrimaryKeyRelatedField(queryset=SNF.objects.all())
+    patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+
     # Reverse relationship since the ForeignKey is in the AppointmentNote model
     appointmentnote_set = AppointmentNoteSerializer(many=True, read_only=True)
 
     class Meta:
         model = Appointment
-        fields = ['id', 'title', 'snf', 'date', 'patient', 'snf', 'appointmentnote_set']
+        fields = ['id', 'title', 'snf', 'date', 'patient', 'appointmentnote_set']
         read_only_fields = ['url', 'created_at', 'updated_at']
 
+    def validate_date(self, value):
+        CustomValidators.validate_holiday(value)
+        CustomValidators.validate_not_weekend(value)
+        return value
 
+    def validate(self, data):
+        snf = data.get('snf')
+        patient = data.get('patient')
+        date = data.get('date')
 
-
+        if snf and patient and date:
+            # Wrapping this in try/catch, to customize the error message to use "date" instead of "non_field_errors"
+            try:
+                CustomValidators.validate_unique_appointment(snf.id, patient.id, date)
+            except ValidationError as e:
+                raise ValidationError({'date': str(e.message)})
+        return data

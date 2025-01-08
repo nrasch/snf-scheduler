@@ -7,6 +7,8 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from authentication.mixins import EditorControlMixin
 
+
+# API Root
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
@@ -17,6 +19,8 @@ def api_root(request, format=None):
         'patient-notes': reverse('patient-notes-list-create', request=request, format=format),
     })
 
+
+# SNF views
 class SNFListCreate(EditorControlMixin, generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
     queryset = SNF.objects.all()
@@ -26,6 +30,8 @@ class SNFDetail(EditorControlMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = SNF.objects.all()
     serializer_class = SNFSerializer
 
+
+# Patient views
 class PatientListCreate(EditorControlMixin, generics.ListCreateAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
@@ -34,6 +40,8 @@ class PatientDetail(EditorControlMixin, generics.RetrieveUpdateDestroyAPIView):
     queryset = Patient.objects.all()
     serializer_class = PatientSerializer
 
+
+# Appointment views
 class AppointmentListCreate(EditorControlMixin, generics.ListCreateAPIView):
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
@@ -42,6 +50,8 @@ class AppointmentDetail(EditorControlMixin, generics.RetrieveUpdateDestroyAPIVie
     queryset = Appointment.objects.all()
     serializer_class = AppointmentSerializer
 
+
+# AppointmentNote views
 class AppointmentNoteListCreate(EditorControlMixin, generics.ListCreateAPIView):
     queryset = AppointmentNote.objects.all()
     serializer_class = AppointmentNoteSerializer
@@ -50,6 +60,8 @@ class AppointmentNoteDetail(EditorControlMixin, generics.RetrieveUpdateDestroyAP
     queryset = AppointmentNote.objects.all()
     serializer_class = AppointmentNoteSerializer
 
+
+# PatientNote views
 class PatientNoteListCreate(EditorControlMixin, generics.ListCreateAPIView):
     queryset = PatientNote.objects.all()
     serializer_class = PatientNoteSerializer
