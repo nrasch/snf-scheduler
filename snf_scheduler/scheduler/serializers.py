@@ -4,17 +4,18 @@ from .validators import CustomValidators
 from django.core.exceptions import ValidationError
 
 class SNFSerializer(serializers.HyperlinkedModelSerializer):
-    patients = serializers.HyperlinkedRelatedField(many=True, view_name='patient-detail', read_only=True)
 
     class Meta:
         model = SNF
-        fields = ['id', 'name', 'description', 'address', 'patients']
+        fields = ['id', 'name', 'description', 'address']
         read_only_fields = ['id', 'url', 'created_at', 'updated_at']
 
 class PatientNoteSerializer(serializers.HyperlinkedModelSerializer):
+    #patient = serializers.PrimaryKeyRelatedField(queryset=Patient.objects.all())
+
     class Meta:
         model = PatientNote
-        fields = ['id', 'text']
+        fields = ['id', 'text', 'patient']
         read_only_fields = ['id', 'url', 'created_at', 'updated_at']
 
 class PatientSerializer(serializers.HyperlinkedModelSerializer):
@@ -37,6 +38,8 @@ class PatientSerializer(serializers.HyperlinkedModelSerializer):
         read_only_fields = ['url', 'date_of_last_appointment', 'date_of_next_appointment', 'created_at', 'updated_at']
 
 class AppointmentNoteSerializer(serializers.HyperlinkedModelSerializer):
+    #appointment = serializers.PrimaryKeyRelatedField(queryset=Appointment.objects.all())
+
     class Meta:
         model = AppointmentNote
         fields = ['id', 'appointment', 'text']

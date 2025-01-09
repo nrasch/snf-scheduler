@@ -1,0 +1,227 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load bootstrap5 %}
+{% load bootstrap_icons %}
+
+{% block title %}SNF Scheduler - SNF Manager{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.0/datatables.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p class="h2"><span class="text-primary">SNF Manager</span></p>
+    <div class="toast-container mt-2">
+        <div id="snfToast" class="toast align-items-center text-white bg-secondary bg-gradient border-0 mt-5" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    SNF has been removed successfully.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container mt-5">
+    <table id="snf-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>SNF ID</th>
+                <th>SNF Name</th>
+                <th>SNF Address</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for snf in snfs %}
+            <tr>
+                <td>{{ snf.id }}</td>
+                <td>{{ snf.name }}</td>
+                <td>{{ snf.address }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addSNFModal">
+        Add New SNF
+    </button>
+    <button type="button" class="btn btn-danger mt-3" id="deleteSNF">
+        Delete SNF
+    </button>
+    <button type="button" class="btn btn-warning mt-3" id="refreshData">
+        Refresh Data
+    </button>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="addSNFModal" tabindex="-1" aria-labelledby="addSNFModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSNFModalLabel">Add New SNF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="snfForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="snf_name" class="form-label">SNF Name</label>
+                                <input type="text" class="form-control" id="snf_name" name="snf_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="snf_address" class="form-label">SNF Address</label>
+                                <input type="text" class="form-control" id="snf_address" name="snf_address" required>
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="snfForm" class="btn btn-primary" id="addSNF">Add SNF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.0/datatables.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    const table = $('#snf-table').DataTable({
+        "paging": true,           // Enable pagination
+        "ordering": true,         // Enable sorting
+        "searching": true,        // Enable search
+        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ], // Show entries options
+        "pageLength": 10          // Default number of entries per page
+    });
+
+    // Add click event for row selection
+    $('#snf-table tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+        } else {
+            table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    });
+
+    // Add click event for the add button
+    $('#addSNF').on('click', function (e) {
+        e.preventDefault();
+
+        var formData = $('#snfForm').serialize();
+
+        $.ajax({
+            url: "{% url 'main:add_snf' %}",
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                console.log("SNF added successfully");
+
+                $('#addSNFModal').modal('hide');
+                $('#snfForm')[0].reset();
+
+                // Refresh the DataTable
+                $.ajax({
+                    url: "",
+                    type: "GET",
+                    dataType: "json",
+                    success: function(data) {
+                        // Clear the existing data and add the new data
+                        table.clear();
+                        data.forEach(function(snf) {
+                            table.row.add([
+                                snf.id,
+                                snf.name,
+                                snf.address,
+                                snf.phone,  // Add all necessary fields
+                                snf.email,
+                                snf.manager
+                            ]).draw(false);
+                        });
+                        table.draw();
+                        console.log("Data refreshed successfully");
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error refreshing data:', error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('Error adding SNF:', error);
+            }
+        });
+    });
+
+    // Add click event for the delete button
+    $('#deleteSNF').on('click', function () {
+        var selectedRow = table.row('.selected');
+        if (!selectedRow.any()) {
+            alert('Please select a row to delete.');
+            return;
+        }
+
+        var snfID = selectedRow.data()[0];
+        console.log("Deleting SNF with ID:", snfID);
+
+        $.ajax({
+            url: "{% url 'main:delete_snf' %}",
+            type: "POST",
+            data: {
+                'snf_id': snfID,
+                'csrfmiddlewaretoken': '{{ csrf_token }}'
+            },
+            success: function(response) {
+                // Log deletion success
+                console.log("SNF deleted successfully");
+
+                // Show success message via toast
+                var toastElement = $('#snfToast');
+                var toast = new bootstrap.Toast(toastElement, {
+                    delay: 5000  // Set to disappear after 5 seconds
+                });
+                toast.show();
+
+                // Remove the row from the table
+                selectedRow.remove().draw(false); // Remove the row from the table
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    $('#refreshData').on('click', function() {
+        $.ajax({
+            url: "",
+            type: "GET",
+            dataType: "json",
+            success: function(data) {
+                table.clear();
+                data.forEach(function(snf) {
+                    table.row.add([
+                        snf.id,
+                        snf.name,
+                        snf.address
+                    ]).draw(false);
+                });
+                table.draw();
+                console.log("Data refreshed successfully");
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+
+
+});
+</script>
+{% endblock %}

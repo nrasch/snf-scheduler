@@ -9,7 +9,8 @@
 {% block content %}
 <div class="container mt-5">
     {% if user.is_authenticated %}
-        <p class="h2"><span class="text-primary">Welcome, {{ user.username }}!</p>
+    <p class="h2"><span class="text-primary">Welcome, {{ user.username }}!</span></p>
+    {% else %}
     {% endif %}
 </div>
 
