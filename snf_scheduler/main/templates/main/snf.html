@@ -15,7 +15,7 @@
     <div class="toast-container mt-2">
         <div id="snfToast" class="toast align-items-center text-white bg-secondary bg-gradient border-0 mt-5" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="d-flex">
-                <div class="toast-body">
+                <div class="toast-body" id="toastMessage">
                     SNF has been removed successfully.
                 </div>
             </div>
@@ -40,17 +40,23 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <th>SNF ID</th>
+                <th>SNF Name</th>
+                <th>SNF Address</th>
+            </tr>
     </table>
 
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addSNFModal">
-        Add New SNF
+        Add SNF
     </button>
     <button type="button" class="btn btn-danger mt-3" id="deleteSNF">
         Delete SNF
     </button>
     <button type="button" class="btn btn-warning mt-3" id="refreshData">
-        Refresh Data
+        Refresh Table
     </button>
 
 
@@ -94,13 +100,24 @@
 <script>
 $(document).ready(function() {
     const table = $('#snf-table').DataTable({
+        ajax: {
+            url: "{% url 'main:get_snf' %}",
+            type: "GET",
+            dataSrc: "data"
+        },
         "paging": true,           // Enable pagination
         "ordering": true,         // Enable sorting
         "searching": true,        // Enable search
         "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ], // Show entries options
-        "pageLength": 10          // Default number of entries per page
+        "pageLength": 10,         // Default number of entries per page
+        "columns": [
+            { "data": "id" },
+            { "data": "name" },
+            { "data": "address" }
+        ]
     });
 
+    // SELECT
     // Add click event for row selection
     $('#snf-table tbody').on('click', 'tr', function () {
         if ($(this).hasClass('selected')) {
@@ -111,6 +128,7 @@ $(document).ready(function() {
         }
     });
 
+    // ADD
     // Add click event for the add button
     $('#addSNF').on('click', function (e) {
         e.preventDefault();
@@ -126,32 +144,16 @@ $(document).ready(function() {
 
                 $('#addSNFModal').modal('hide');
                 $('#snfForm')[0].reset();
+                // Show success message via toast
+                var toastElement = $('#snfToast');
+                var toast = new bootstrap.Toast(toastElement, {
+                    delay: 5000  // Set to disappear after 5 seconds
+                });
+                $("#toastMessage").text("SNF has been added successfully.");
+                toast.show();
 
                 // Refresh the DataTable
-                $.ajax({
-                    url: "",
-                    type: "GET",
-                    dataType: "json",
-                    success: function(data) {
-                        // Clear the existing data and add the new data
-                        table.clear();
-                        data.forEach(function(snf) {
-                            table.row.add([
-                                snf.id,
-                                snf.name,
-                                snf.address,
-                                snf.phone,  // Add all necessary fields
-                                snf.email,
-                                snf.manager
-                            ]).draw(false);
-                        });
-                        table.draw();
-                        console.log("Data refreshed successfully");
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Error refreshing data:', error);
-                    }
-                });
+                table.ajax.reload();
             },
             error: function(xhr, status, error) {
                 console.error('Error adding SNF:', error);
@@ -159,6 +161,7 @@ $(document).ready(function() {
         });
     });
 
+    // DELETE
     // Add click event for the delete button
     $('#deleteSNF').on('click', function () {
         var selectedRow = table.row('.selected');
@@ -166,8 +169,8 @@ $(document).ready(function() {
             alert('Please select a row to delete.');
             return;
         }
-
-        var snfID = selectedRow.data()[0];
+        var data = selectedRow.data();
+        var snfID = data.id
         console.log("Deleting SNF with ID:", snfID);
 
         $.ajax({
@@ -186,6 +189,7 @@ $(document).ready(function() {
                 var toast = new bootstrap.Toast(toastElement, {
                     delay: 5000  // Set to disappear after 5 seconds
                 });
+                $("#toastMessage").text("SNF with ID " + snfID + " has been removed successfully.");
                 toast.show();
 
                 // Remove the row from the table
@@ -197,30 +201,10 @@ $(document).ready(function() {
         });
     });
 
+    // REFRESH
     $('#refreshData').on('click', function() {
-        $.ajax({
-            url: "",
-            type: "GET",
-            dataType: "json",
-            success: function(data) {
-                table.clear();
-                data.forEach(function(snf) {
-                    table.row.add([
-                        snf.id,
-                        snf.name,
-                        snf.address
-                    ]).draw(false);
-                });
-                table.draw();
-                console.log("Data refreshed successfully");
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-            }
-        });
+        table.ajax.reload();
     });
-
-
 
 });
 </script>

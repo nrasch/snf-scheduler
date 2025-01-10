@@ -8,4 +8,5 @@ urlpatterns = [
     path('snf/', views.snf, name='snf'),
     path('delete-snf/', views.delete_snf, name='delete_snf'),
     path('add-snf/', views.add_snf, name='add_snf'),
+    path('get-snf/', views.get_snf, name='get_snf'),
 ]

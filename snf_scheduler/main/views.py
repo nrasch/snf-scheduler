@@ -2,12 +2,17 @@ from django.shortcuts import render
 from scheduler.models import SNF
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+
 
 # Create your views here.
+@login_required
 def home(request):
     context = {}
     return render(request, 'main/home.html', context)
 
+
+@login_required
 def snf(request):
     snfs = SNF.objects.all()
 
@@ -23,6 +28,7 @@ def snf(request):
         return render(request, 'main/snf.html', context)
 
 
+@login_required
 @require_http_methods(["POST"])
 def delete_snf(request):
     snf_id = request.POST.get('snf_id')
@@ -42,6 +48,7 @@ def delete_snf(request):
         # Catch any other exceptions, like database errors
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+@login_required
 @require_http_methods(["POST"])
 def add_snf(request):
     if request.method == 'POST':
@@ -61,3 +68,30 @@ def add_snf(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
+@login_required
+@require_http_methods(["GET"])
+def get_snf(request):
+    if request.GET.get('snf_id'):
+        snf_id = request.GET.get('snf_id')
+        try:
+            snf = SNF.objects.get(id=snf_id)
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'name': snf.name,
+                    'address': snf.address
+                }
+            })
+        except SNF.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    else:
+        try:
+            snf = SNF.objects.all()
+            return JsonResponse({
+                'success': True,
+                'data': list(snf.values('id', 'name', 'address'))
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
