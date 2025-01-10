@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,90 +22,102 @@
     {% block styles %}
     {% endblock %}
 </head>
+
 <body>
-    <div class="wrapper">
-        <header>
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
-                <div class="container-fluid">
-                    <a class="navbar-brand" href="#">SNF Scheduler</a>
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-        </header>
-
-        <div class="content-wrapper">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link" aria-current="page" href="{% url 'main:home' %}">
-                                {% bs_icon 'house-door' %}
-                                Home
-                            </a>
-                        </li>
-                        {% if user.is_authenticated %}
-                            {% if user.is_staff %}
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{% url 'admin:index' %}">
-                                        {% bs_icon 'people' %}
-                                        Admin Area
-                                    </a>
-                                </li>
-                            {% endif %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'api-root' %}">
-                                    {% bs_icon 'box' %}
-                                    Browseable API
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'main:snf' %}">
-                                    {% bs_icon 'clipboard-pulse' %}
-                                    SNF Manager
-                                </a>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'authentication:tokens' %}">
-                                    {% bs_icon 'key' %}
-                                    API Tokens
-                                </a>
-                            </li>
-                        {% endif %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'authentication:logout' %}">
-                                {% bs_icon 'box-arrow-right' %}
-                                Logout
-                            </a>
-                        </li>
-                        <!-- Add more menu items as needed -->
-                    </ul>
-                </div>
-            </nav>
-
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
-                {% block content %}
-                <h1>Main Content Area</h1>
-                <p>Welcome to the main content area where you'll put your dynamic content.</p>
-                {% endblock %}
-            </main>
-        </div>
-
-        <footer class="footer mt-auto py-3 bg-light">
-            <div class="container">
-                <span class="text-muted">&copy; 2024 Nathan Rasch</span>
+<div class="wrapper">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">SNF Scheduler</a>
             </div>
-        </footer>
+        </nav>
+    </header>
+
+    <div class="content-wrapper">
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{% url 'main:home' %}">
+                            {% bs_icon 'house-door' %}
+                            Home
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'admin:index' %}">
+                            {% bs_icon 'people' %}
+                            Admin Area
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    <!-- API Section -->
+                    <li class="nav-item">
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>API</span>
+                        </h6>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'api-root' %}">
+                            {% bs_icon 'box' %}
+                            Browseable API
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'authentication:tokens' %}">
+                            {% bs_icon 'key' %}
+                            API Tokens
+                        </a>
+                    </li>
+
+                    <!-- Management Section -->
+                    <li class="nav-item">
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>Management</span>
+                        </h6>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main:snf' %}">
+                            {% bs_icon 'clipboard-pulse' %}
+                            SNF Manager
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+                            <span>Session</span>
+                        </h6>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'authentication:logout' %}">
+                            {% bs_icon 'box-arrow-right' %}
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+            {% block content %}
+            <h1>Main Content Area</h1>
+            <p>Content in this block should be overridden in the child templates.</p>
+            {% endblock %}
+        </main>
     </div>
 
-    <!-- Bootstrap JS -->
-    {% bootstrap_javascript %}
-    {% block scripts %}
-    {% endblock %}
+    <footer class="footer mt-auto py-3 bg-light">
+        <div class="container">
+            <span class="text-muted">&copy; 2024 Nathan Rasch</span>
+        </div>
+    </footer>
+</div>
+
+<!-- Bootstrap JS -->
+{% bootstrap_javascript %}
+{% block scripts %}
+{% endblock %}
 </body>
 </html>

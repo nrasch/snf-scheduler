@@ -14,17 +14,81 @@
     {% endif %}
 </div>
 
-{% if token %}
-<div class="container mt-5">
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="alert alert-info mt-3">
-                <p>Your Knox Token:</p>
-                <code class="text-break">{{ token }}</code>
-            </div>
-        </div>
+<div class="container">
+    <h4 class="mt-5">Skilled Nursing Facility (SNF) Prototype Notes:</h4>
+    <ul>
+        <li>
+            <strong>API Endpoints:</strong> The current endpoints are listed below. Access requires an API token, which can be generated via the "API Tokens" link in the left navigation menu. The tokens utilize <i>Django-Rest-Knox</i> for authentication.
+        </li>
+        <li>
+            <strong>CRUD Functionality via UI:</strong> CRUD operations are available leveraging DataTables, AJAX, and Django. You can find links to these areas on the left-hand navigation menu.
+        </li>
+        <li>
+            <strong>Browsable API:</strong> There is also a browsable API interface.  You can find the link to it on the left-hand navigation menu.
+        </li>
+        <li>
+            <strong>Access Control:</strong> Access to the UI and API are handled by groups defined in the <i>Admin Panel</i> or via Knox token.
+            <ul>
+                <li>If you are viewing this page with a <i>staff account</i> will will see a link to the <i>Admin Panel</i> on the left-hand navigation menu.</li>
+            </ul>
+        </li>
+        <li>
+            <strong>Work in Progress:</strong> This is a work in progres.  More features, business logic, and documentation coming soon...
+        </li>
+    </ul>
+
+    <h4 class="mt-5">Current API Endpoints</h4>
+
+    <div class="api-endpoint">
+        <h5>API Root</h5>
+        <p><code>GET /</code></p>
+        <p>Root endpoint for the API. Provides links to other resources.</p>
+    </div>
+
+    <div class="api-endpoint">
+        <h5>SNFs</h5>
+        <p><code>GET, POST /snfs/</code></p>
+        <p>List or create SNFs.</p>
+        <p><code>GET, PUT, PATCH, DELETE /snfs/<i>{id}</i>/</code></p>
+        <p>Retrieve, update or delete a specific SNF by ID.</p>
+    </div>
+
+    <div class="api-endpoint">
+        <h5>Patients</h5>
+        <p><code>GET, POST /patients/</code></p>
+        <p>List or create patients.</p>
+        <p><code>GET, PUT, PATCH, DELETE /patients/<i>{id}</i>/</code></p>
+        <p>Retrieve, update or delete a specific patient by ID.</p>
+    </div>
+
+    <div class="api-endpoint">
+        <h5>Appointments</h5>
+        <p><code>GET, POST /appointments/</code></p>
+        <p>List or create appointments.</p>
+        <p><code>GET, PUT, PATCH, DELETE /appointments/<i>{id}</i>/</code></p>
+        <p>Retrieve, update or delete a specific appointment by ID.</p>
+    </div>
+
+    <div class="api-endpoint">
+        <h5>Appointment Notes</h5>
+        <p><code>GET, POST /appointment-notes/</code></p>
+        <p>List or create appointment notes.</p>
+        <p><code>GET, PUT, PATCH, DELETE /appointment-notes/<i>{id}</i>/</code></p>
+        <p>Retrieve, update or delete a specific appointment note by ID.</p>
+    </div>
+
+    <div class="api-endpoint">
+        <h5>Patient Notes</h5>
+        <p><code>GET, POST /patient-notes/</code></p>
+        <p>List or create patient notes.</p>
+        <p><code>GET, PUT, PATCH, DELETE /patient-notes/<i>{id}</i>/</code></p>
+        <p>Retrieve, update or delete a specific patient note by ID.</p>
     </div>
 </div>
-{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+
+</body>
+</html>
 
 {% endblock %}

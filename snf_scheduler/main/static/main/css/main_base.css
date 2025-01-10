@@ -34,3 +34,12 @@ html, body {
     height: 100%; /* Fill the sidebar container */
     overflow-y: auto; /* Allow scrolling if content overflows */
 }
+
+.api-endpoint {
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+}
+
+.api-endpoint:last-child {
+    border-bottom: none;
+}
