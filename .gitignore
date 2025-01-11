@@ -7,3 +7,4 @@
 /snf_scheduler/staticfiles
 /snf_scheduler/main/__pycache__
 /snf_scheduler/main/migrations/__pycache__
+/snf_scheduler/scheduler/management/commands/__pycache__

@@ -7,6 +7,10 @@ class SNF(models.Model):
     name = models.CharField(max_length=100, verbose_name="SNF Name")
     description = models.TextField(null=True, blank=True, verbose_name="Description")
     address = models.TextField(verbose_name="Address")
+    phone = models.CharField(max_length=15, verbose_name="Phone Number", default="000-000-0000")
+    hour_opens = models.TimeField(verbose_name="Opening Hour", default=datetime.time(8, 0))
+    hour_closes = models.TimeField(verbose_name="Closing Hour", default=datetime.time(17, 0))
+    max_concurrent_appointments = models.PositiveIntegerField(default=0, verbose_name="Maximum Concurrent Appointments")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
@@ -39,12 +43,13 @@ class Appointment(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, verbose_name="Patient")
     date = models.DateTimeField(verbose_name="Appointment Date",
                                 validators=[CustomValidators.validate_holiday, CustomValidators.validate_not_weekend])
+    duration = models.DurationField(verbose_name="Appointment Duration", default=datetime.timedelta(hours=1))
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Created At")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Updated At")
 
     @property
     def title(self):
-        return f"{self.patient.name} at {self.snf.name} on {self.date:%Y-%m-%d}"
+        return f"{self.patient.name} at {self.snf.name} on {self.date:%Y-%m-%d %H:%M %p}"
 
     def __str__(self):
         return self.title
