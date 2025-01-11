@@ -19,7 +19,7 @@ def snf(request):
     # Handle AJAX request
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
         # Create data set to return
-        data = list(snfs.values('id', 'name', 'address'))
+        data = list(snfs.values('id', 'name', 'address', 'description', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments' ))
         return JsonResponse(data, safe=False)
     # If not AJAX, render the template
     else:
@@ -78,8 +78,13 @@ def get_snf(request):
             return JsonResponse({
                 'success': True,
                 'data': {
+                    'id': snf.id,
                     'name': snf.name,
-                    'address': snf.address
+                    'address': snf.address,
+                    'phone': snf.phone,
+                    'hour_opens': str(snf.hour_opens),  # Convert time to string
+                    'hour_closes': str(snf.hour_closes),  # Convert time to string
+                    'max_concurrent_appointments': snf.max_concurrent_appointments
                 }
             })
         except SNF.DoesNotExist:
@@ -88,10 +93,15 @@ def get_snf(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
     else:
         try:
-            snf = SNF.objects.all()
+            snfs = SNF.objects.all()
+            data = list(snfs.values('id', 'name', 'address', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments'))
+            # Convert TimeField to string for JSON serialization
+            for snf in data:
+                snf['hour_opens'] = str(snf['hour_opens'])
+                snf['hour_closes'] = str(snf['hour_closes'])
             return JsonResponse({
                 'success': True,
-                'data': list(snf.values('id', 'name', 'address'))
+                'data': data
             })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)

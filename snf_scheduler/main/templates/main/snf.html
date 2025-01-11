@@ -29,23 +29,26 @@
                 <th>SNF ID</th>
                 <th>SNF Name</th>
                 <th>SNF Address</th>
+                <th>Phone</th>
+                <th>Opening Hour</th>
+                <th>Closing Hour</th>
+                <th>Max Appointments</th>
             </tr>
         </thead>
         <tbody>
-            {% for snf in snfs %}
-            <tr>
-                <td>{{ snf.id }}</td>
-                <td>{{ snf.name }}</td>
-                <td>{{ snf.address }}</td>
-            </tr>
-            {% endfor %}
+            <!-- The initial table body is empty because data will be loaded via AJAX -->
         </tbody>
         <tfoot>
             <tr>
                 <th>SNF ID</th>
                 <th>SNF Name</th>
                 <th>SNF Address</th>
+                <th>Phone</th>
+                <th>Opening Hour</th>
+                <th>Closing Hour</th>
+                <th>Max Appointments</th>
             </tr>
+        </tfoot>
     </table>
 
     <!-- Button trigger modal -->
@@ -58,7 +61,6 @@
     <button type="button" class="btn btn-warning mt-3" id="refreshData">
         Refresh Table
     </button>
-
 
     <!-- Modal -->
     <div class="modal fade" id="addSNFModal" tabindex="-1" aria-labelledby="addSNFModalLabel" aria-hidden="true">
@@ -80,7 +82,22 @@
                                 <label for="snf_address" class="form-label">SNF Address</label>
                                 <input type="text" class="form-control" id="snf_address" name="snf_address" required>
                             </div>
-
+                            <div class="col-md-6">
+                                <label for="snf_phone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="snf_phone" name="snf_phone" value="000-000-0000" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hour_opens" class="form-label">Opening Hour</label>
+                                <input type="time" class="form-control" id="hour_opens" name="hour_opens" value="08:00" required>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="hour_closes" class="form-label">Closing Hour</label>
+                                <input type="time" class="form-control" id="hour_closes" name="hour_closes" value="17:00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
+                                <input type="number" class="form-control" id="max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -99,26 +116,30 @@
 
 <script>
 $(document).ready(function() {
+    // TABLE INIT
     const table = $('#snf-table').DataTable({
         ajax: {
             url: "{% url 'main:get_snf' %}",
             type: "GET",
             dataSrc: "data"
         },
-        "paging": true,           // Enable pagination
-        "ordering": true,         // Enable sorting
-        "searching": true,        // Enable search
-        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ], // Show entries options
-        "pageLength": 10,         // Default number of entries per page
+        "paging": true,
+        "ordering": true,
+        "searching": true,
+        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+        "pageLength": 10,
         "columns": [
             { "data": "id" },
             { "data": "name" },
-            { "data": "address" }
+            { "data": "address" },
+            { "data": "phone" },
+            { "data": "hour_opens" },
+            { "data": "hour_closes" },
+            { "data": "max_concurrent_appointments" }
         ]
     });
 
     // SELECT
-    // Add click event for row selection
     $('#snf-table tbody').on('click', 'tr', function () {
         if ($(this).hasClass('selected')) {
             $(this).removeClass('selected');
@@ -129,10 +150,8 @@ $(document).ready(function() {
     });
 
     // ADD
-    // Add click event for the add button
     $('#addSNF').on('click', function (e) {
         e.preventDefault();
-
         var formData = $('#snfForm').serialize();
 
         $.ajax({
@@ -141,18 +160,12 @@ $(document).ready(function() {
             data: formData,
             success: function(response) {
                 console.log("SNF added successfully");
-
                 $('#addSNFModal').modal('hide');
                 $('#snfForm')[0].reset();
-                // Show success message via toast
                 var toastElement = $('#snfToast');
-                var toast = new bootstrap.Toast(toastElement, {
-                    delay: 5000  // Set to disappear after 5 seconds
-                });
+                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
                 $("#toastMessage").text("SNF has been added successfully.");
                 toast.show();
-
-                // Refresh the DataTable
                 table.ajax.reload();
             },
             error: function(xhr, status, error) {
@@ -162,7 +175,6 @@ $(document).ready(function() {
     });
 
     // DELETE
-    // Add click event for the delete button
     $('#deleteSNF').on('click', function () {
         var selectedRow = table.row('.selected');
         if (!selectedRow.any()) {
@@ -170,7 +182,7 @@ $(document).ready(function() {
             return;
         }
         var data = selectedRow.data();
-        var snfID = data.id
+        var snfID = data.id;
         console.log("Deleting SNF with ID:", snfID);
 
         $.ajax({
@@ -181,19 +193,12 @@ $(document).ready(function() {
                 'csrfmiddlewaretoken': '{{ csrf_token }}'
             },
             success: function(response) {
-                // Log deletion success
                 console.log("SNF deleted successfully");
-
-                // Show success message via toast
                 var toastElement = $('#snfToast');
-                var toast = new bootstrap.Toast(toastElement, {
-                    delay: 5000  // Set to disappear after 5 seconds
-                });
+                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
                 $("#toastMessage").text("SNF with ID " + snfID + " has been removed successfully.");
                 toast.show();
-
-                // Remove the row from the table
-                selectedRow.remove().draw(false); // Remove the row from the table
+                selectedRow.remove().draw(false);
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
