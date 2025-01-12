@@ -1,10 +1,5 @@
 /.venv
-/snf_scheduler/scheduler/__pycache__
-/snf_scheduler/scheduler/migrations/__pycache__
-/snf_scheduler/snf_scheduler/__pycache__
-/snf_scheduler/authentication/__pycache__
+__pycache__/
 /.idea
 /snf_scheduler/staticfiles
-/snf_scheduler/main/__pycache__
-/snf_scheduler/main/migrations/__pycache__
-/snf_scheduler/scheduler/management/commands/__pycache__
+*.pyc

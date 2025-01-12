@@ -5,7 +5,7 @@ app_name = 'main'
 
 urlpatterns = [
     path('home/', views.home, name='home'),
-    path('snf/', views.snf, name='snf'),
+    path('snf/', views.list_snf, name='list_snf'),
     path('delete-snf/', views.delete_snf, name='delete_snf'),
     path('add-snf/', views.add_snf, name='add_snf'),
     path('get-snf/', views.get_snf, name='get_snf'),

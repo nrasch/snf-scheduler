@@ -3,6 +3,8 @@ from scheduler.models import SNF
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+import json
 
 
 # Create your views here.
@@ -13,14 +15,26 @@ def home(request):
 
 
 @login_required
-def snf(request):
+@require_http_methods(["GET"])
+def list_snf(request):
     snfs = SNF.objects.all()
 
     # Handle AJAX request
     if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
-        # Create data set to return
-        data = list(snfs.values('id', 'name', 'address', 'description', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments' ))
-        return JsonResponse(data, safe=False)
+        try:
+            # Create data set to return
+            data = list(snfs.values('id', 'name', 'address', 'description', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments' ))
+
+            for snf in data:
+                snf['hour_opens'] = str(snf['hour_opens'])
+                snf['hour_closes'] = str(snf['hour_closes'])
+
+            return JsonResponse({
+                'success': True,
+                'data': data
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
     # If not AJAX, render the template
     else:
         context = {}
@@ -29,24 +43,26 @@ def snf(request):
 
 
 @login_required
-@require_http_methods(["POST"])
+@require_http_methods(["DELETE"])
 def delete_snf(request):
-    snf_id = request.POST.get('snf_id')
-    if not snf_id:
-        return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
+    if request.method == 'DELETE':
+        # Since we are sending data in the body of a DELETE request, we will
+        # use request.body to get the data instead of request.POST
+        data = json.loads(request.body)
+        snf_id = data.get('snf_id')
 
-    try:
-        # Attempt to fetch the SNF object
-        snf = SNF.objects.get(id=snf_id)
-        # Delete the SNF object
-        snf.delete()
-        return JsonResponse({'success': True})
-    except SNF.DoesNotExist:
-        # If the SNF with the given ID does not exist
-        return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
-    except Exception as e:
-        # Catch any other exceptions, like database errors
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+        if not snf_id:
+            return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
+
+        try:
+            snf = SNF.objects.get(id=snf_id)
+            snf.delete()
+            return JsonResponse({'success': True})
+        except SNF.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 @login_required
 @require_http_methods(["POST"])
@@ -55,18 +71,27 @@ def add_snf(request):
         snf_data = {
             'name': request.POST.get('snf_name'),
             'address': request.POST.get('snf_address'),
-            #'phone': request.POST.get('snf_phone'),
-            #'email': request.POST.get('snf_email'),
-            #'manager': request.POST.get('snf_manager')
+            'phone': request.POST.get('snf_phone', '000-000-0000'),  # Default value if not provided
+            'hour_opens': request.POST.get('hour_opens', '08:00'),  # Default opening time
+            'hour_closes': request.POST.get('hour_closes', '17:00'),  # Default closing time
+            'max_concurrent_appointments': int(request.POST.get('max_concurrent_appointments', 0))  # Default to 0
         }
 
         try:
+            # Convert string times to time objects
+            snf_data['hour_opens'] = timezone.datetime.strptime(snf_data['hour_opens'], '%H:%M').time()
+            snf_data['hour_closes'] = timezone.datetime.strptime(snf_data['hour_closes'], '%H:%M').time()
+
             snf = SNF(**snf_data)
             snf.save()
             return JsonResponse({'success': True})
+        except ValueError as ve:
+            # Handle if the time format is incorrect
+            return JsonResponse({'success': False, 'error': f'Invalid time format: {str(ve)}'}, status=400)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
 
 @login_required
 @require_http_methods(["GET"])
@@ -89,19 +114,5 @@ def get_snf(request):
             })
         except SNF.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-    else:
-        try:
-            snfs = SNF.objects.all()
-            data = list(snfs.values('id', 'name', 'address', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments'))
-            # Convert TimeField to string for JSON serialization
-            for snf in data:
-                snf['hour_opens'] = str(snf['hour_opens'])
-                snf['hour_closes'] = str(snf['hour_closes'])
-            return JsonResponse({
-                'success': True,
-                'data': data
-            })
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
