@@ -118,7 +118,7 @@ $(document).ready(function() {
     // TABLE INIT
     const table = $('#snf-table').DataTable({
         ajax: {
-            url: "{% url 'main:list_snf' %}",
+            url: "{% url 'main:list_snfs' %}",
             type: "GET",
             dataSrc: "data"
         },

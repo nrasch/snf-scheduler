@@ -79,9 +79,15 @@
                         </h6>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'main:list_snf' %}">
+                        <a class="nav-link" href="{% url 'main:list_snfs' %}">
                             {% bs_icon 'clipboard-pulse' %}
                             SNF Manager
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main:list_patients' %}">
+                            {% bs_icon 'people' %}
+                            Patient Manager
                         </a>
                     </li>
                     {% endif %}

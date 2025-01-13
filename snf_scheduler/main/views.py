@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from scheduler.models import SNF
+from scheduler.models import SNF, Patient, Appointment, AppointmentNote, PatientNote
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
@@ -13,10 +13,12 @@ def home(request):
     context = {}
     return render(request, 'main/home.html', context)
 
-
+#################
+### SNF Views ###
+#################
 @login_required
 @require_http_methods(["GET"])
-def list_snf(request):
+def list_snfs(request):
     snfs = SNF.objects.all()
 
     # Handle AJAX request
@@ -114,5 +116,108 @@ def get_snf(request):
             })
         except SNF.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+#####################
+### Patient Views ###
+#####################
+@login_required
+@require_http_methods(["GET"])
+@login_required
+@require_http_methods(["GET"])
+def list_patients(request):
+    patients = Patient.objects.all()
+
+    # Handle AJAX request
+    if request.META.get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest':
+        try:
+            data = []
+            # We are looping through the patients and creating a dictionary for each patient, because
+            # we cannot directly serialize the queryset to JSON using list(patients.values()) or patients.values()
+            # This due to the Patient model having two computed fields:  `age` and `name`
+            # Properties defined on the model are not included by default.
+            for patient in patients:
+                data.append({
+                    'id': patient.id,
+                    'name': patient.name, # Directly using the name property from the model
+                    'date_of_birth': patient.date_of_birth,
+                    'age': patient.age,  # Directly using the age property from the model
+                    'date_of_last_appointment': patient.date_of_last_appointment,
+                    'date_of_next_appointment': patient.date_of_next_appointment,
+                    'active': patient.active
+                })
+
+            return JsonResponse({
+                'success': True,
+                'data': data
+            })
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    # If not AJAX, render the template
+    else:
+        context = {'patients': patients}
+        return render(request, 'main/patient.html', context)
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_patient(request):
+    if request.method == 'DELETE':
+        # Since we are sending data in the body of a DELETE request, we will
+        # use request.body to get the data instead of request.POST
+        data = json.loads(request.body)
+        patient_id = data.get('patient_id')
+
+        if not patient_id:
+            return JsonResponse({'success': False, 'error': '{Patient} ID is required.'}, status=400)
+
+        try:
+            patient = Patient.objects.get(id=patient_id)
+            patient.delete()
+            return JsonResponse({'success': True})
+        except Patient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["POST"])
+def add_patient(request):
+    if request.method == 'POST':
+        patient_data = {
+            'first_name': request.POST.get('first_name'),
+            'last_name': request.POST.get('last_name'),
+            'date_of_birth': request.POST.get('date_of_birth'),
+            'active': request.POST.get('active', False)
+        }
+
+        try:
+            patient = Patient(**patient_data)
+            patient.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+@login_required
+@require_http_methods(["GET"])
+def get_patient(request):
+    if request.GET.get('patient_id'):
+        patient_id = request.GET.get('patient_id')
+        try:
+            patient = Patient.objects.get(id=patient_id)
+            return JsonResponse({
+                'success': True,
+                'data': {
+                    'id': patient.id,
+                    'first_name': patient.first_name,
+                    'last_name': patient.last_name,
+                    'date_of_birth': patient.date_of_birth,
+                    'active': patient.active
+                }
+            })
+        except Patient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)

@@ -1,0 +1,210 @@
+{% extends "main/base.html" %}
+{% load static %}
+{% load bootstrap5 %}
+{% load bootstrap_icons %}
+
+{% block title %}Patient Manager{% endblock %}
+
+{% block styles %}
+<link href="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.0/datatables.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <p class="h2"><span class="text-primary">Patient Manager</span></p>
+    <p class="h4"><span class="text-primary">(Utilizing Django Views to Process AJAX Requests)</span></p>
+    <div class="toast-container mt-2">
+        <div id="patientToast" class="toast align-items-center text-white bg-secondary bg-gradient border-0 mt-5" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage">
+                    Patient has been processed successfully.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container mt-5">
+    <table id="patient-table" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Full Name</th>
+                <th>Date of Birth</th>
+                <th>Age</th>
+                <th>Last Appointment</th>
+                <th>Next Appointment</th>
+                <th>Active</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- The initial table body is empty because data will be loaded via AJAX -->
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>Full Name</th>
+                <th>Date of Birth</th>
+                <th>Age</th>
+                <th>Last Appointment</th>
+                <th>Next Appointment</th>
+                <th>Active</th>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addPatientModal">
+        Add Patient
+    </button>
+    <button type="button" class="btn btn-danger mt-3" id="deletePatient">
+        Delete Patient
+    </button>
+    <button type="button" class="btn btn-warning mt-3" id="refreshData">
+        Refresh Table
+    </button>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addPatientModalLabel">Add New Patient</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="patientForm">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="date_of_birth" class="form-label">Date of Birth</label>
+                                <input type="date" class="form-control" id="date_of_birth" name="date_of_birth" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="active" class="form-label">Active</label>
+                                <select class="form-select" id="active" name="active">
+                                    <option value="True">Yes</option>
+                                    <option value="False">No</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="patientForm" class="btn btn-primary" id="addPatient">Add Patient</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.0/datatables.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // TABLE INIT for Patients
+    const table = $('#patient-table').DataTable({
+        ajax: {
+            url: "{% url 'main:list_patients' %}",
+            type: "GET",
+            dataSrc: "data"
+        },
+        "paging": true,
+        "ordering": true,
+        "searching": true,
+        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+        "pageLength": 10,
+        "columns": [
+            { "data": "name" },
+            { "data": "date_of_birth" },
+            { "data": "age" },
+            { "data": "date_of_last_appointment" },
+            { "data": "date_of_next_appointment" },
+            { "data": "active" }
+        ]
+    });
+
+    // SELECT
+    $('#patient-table tbody').on('click', 'tr', function () {
+        if ($(this).hasClass('selected')) {
+            $(this).removeClass('selected');
+        } else {
+            table.$('tr.selected').removeClass('selected');
+            $(this).addClass('selected');
+        }
+    });
+
+    // ADD
+    $('#addPatient').on('click', function (e) {
+        e.preventDefault();
+        var formData = $('#patientForm').serialize();
+
+        $.ajax({
+            url: "{% url 'main:add_patient' %}",
+            type: "POST",
+            data: formData,
+            success: function(response) {
+                console.log("Patient added successfully");
+                $('#addPatientModal').modal('hide');
+                $('#patientForm')[0].reset();
+                var toastElement = $('#patientToast');
+                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+                $("#toastMessage").text("Patient has been added successfully.");
+                toast.show();
+                table.ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error adding patient:', error);
+            }
+        });
+    });
+
+    // DELETE
+    $('#deletePatient').on('click', function () {
+        var selectedRow = table.row('.selected');
+        if (!selectedRow.any()) {
+            alert('Please select a row to delete.');
+            return;
+        }
+        var data = selectedRow.data();
+        var patientID = data.id;
+        console.log("Deleting Patient with ID:", patientID);
+
+        $.ajax({
+            url: "{% url 'main:delete_patient' %}",
+            type: "DELETE",
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "Content-Type": "application/json"
+            },
+            data: JSON.stringify({ 'patient_id': patientID }),
+            success: function(response) {
+                console.log("Patient deleted successfully");
+                var toastElement = $('#patientToast');
+                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+                $("#toastMessage").text("Patient with ID " + patientID + " has been removed successfully.");
+                toast.show();
+                selectedRow.remove().draw(false);
+            },
+            error: function(xhr, status, error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // REFRESH
+    $('#refreshData').on('click', function() {
+        table.ajax.reload();
+    });
+
+});
+</script>
+{% endblock %}
