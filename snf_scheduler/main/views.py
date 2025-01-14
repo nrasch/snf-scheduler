@@ -5,6 +5,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
+import urllib.parse
 
 
 # Create your views here.
@@ -49,7 +50,7 @@ def list_snfs(request):
 def delete_snf(request):
     if request.method == 'DELETE':
         # Since we are sending data in the body of a DELETE request, we will
-        # use request.body to get the data instead of request.POST
+        # use request.body to get the data instead of request.DELETE
         data = json.loads(request.body)
         snf_id = data.get('snf_id')
 
@@ -118,6 +119,55 @@ def get_snf(request):
             return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_http_methods(["PUT"])
+def edit_snf(request):
+    # Parse the URL-encoded data
+    data = urllib.parse.parse_qs(request.body.decode('utf-8'))
+
+    # Clean and convert data
+    snf_data = {}
+    for key, value in data.items():
+        cleaned_value = value[0].strip().strip('"')
+
+        if key == "max_concurrent_appointments":
+            try:
+                snf_data[key] = int(cleaned_value)
+            except ValueError:
+                return JsonResponse({'success': False, 'error': f'Invalid value for {key}: {cleaned_value}'},
+                                    status=400)
+        elif key in ['hour_opens', 'hour_closes']:
+            try:
+                snf_data[key] = timezone.datetime.strptime(cleaned_value, '%H:%M:%S').time()
+            except ValueError:
+                return JsonResponse({'success': False, 'error': f'Invalid time format for {key}: {cleaned_value}'},
+                                    status=400)
+        else:
+            snf_data[key] = cleaned_value
+
+    snf_id = snf_data.get('snf_id')
+    if not snf_id:
+        return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
+
+    try:
+        # Retrieve the SNF object
+        snf = SNF.objects.get(id=snf_id)
+
+        # Update the SNF object
+        for key, value in snf_data.items():
+            if hasattr(snf, key):
+                setattr(snf, key, value)
+
+        # Save changes
+        snf.save()
+        return JsonResponse({'success': True, 'message': 'SNF updated successfully.'})
+
+    except SNF.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
 #####################

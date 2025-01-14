@@ -33,6 +33,7 @@
                 <th>Opening Hour</th>
                 <th>Closing Hour</th>
                 <th>Max Appointments</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -46,6 +47,7 @@
                 <th>Opening Hour</th>
                 <th>Closing Hour</th>
                 <th>Max Appointments</th>
+                <th>Actions</th>
             </tr>
         </tfoot>
     </table>
@@ -54,14 +56,11 @@
     <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addSNFModal">
         Add SNF
     </button>
-    <button type="button" class="btn btn-danger mt-3" id="deleteSNF">
-        Delete SNF
-    </button>
-    <button type="button" class="btn btn-warning mt-3" id="refreshData">
-        Refresh Table
+    <button type="button" class="btn btn-secondary mt-3" id="refreshData">
+        Refresh Data
     </button>
 
-    <!-- Modal -->
+    <!-- Modal for Adding SNF -->
     <div class="modal fade" id="addSNFModal" tabindex="-1" aria-labelledby="addSNFModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content">
@@ -108,6 +107,55 @@
         </div>
     </div>
 </div>
+<!-- Modal for editing SNF -->
+<div class="modal fade" id="editSNFModal" tabindex="-1" aria-labelledby="editSNFModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSNFModalLabel">Edit SNF</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" id="editSNFForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="edit_snf_id" name="snf_id">
+                    <!-- Here, replicate the form fields from your add modal with 'edit_' prefix -->
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="edit_snf_name" class="form-label">SNF Name</label>
+                            <input type="text" class="form-control" id="edit_snf_name" name="snf_name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_snf_address" class="form-label">SNF Address</label>
+                            <input type="text" class="form-control" id="edit_snf_address" name="snf_address" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_snf_phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="edit_snf_phone" name="snf_phone" value="000-000-0000" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_hour_opens" class="form-label
+                            ">Opening Hour</label>
+                            <input type="time" class="form-control" id="edit_hour_opens" name="hour_opens" value="08:00" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="edit_hour_closes" class="form-label">Closing Hour</label>
+                            <input type="time" class="form-control" id="edit_hour_closes" name="hour_closes" value="17:00" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="edit_max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
+                            <input type="number" class="form-control" id="edit_max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="editSNFForm" class="btn btn-primary" id="updateSNF">Update SNF</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -125,7 +173,7 @@ $(document).ready(function() {
         "paging": true,
         "ordering": true,
         "searching": true,
-        "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+        "lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],
         "pageLength": 10,
         "columns": [
             { "data": "name" },
@@ -133,19 +181,21 @@ $(document).ready(function() {
             { "data": "phone" },
             { "data": "hour_opens" },
             { "data": "hour_closes" },
-            { "data": "max_concurrent_appointments" }
+            { "data": "max_concurrent_appointments" },
+            { "data": null } // New column for the edit button
+        ],
+        "columnDefs": [
+            {
+                // Here we define the content of the last column
+                "targets": -1, // Targets the last column
+                "data": null,
+                "defaultContent": "<button class='btn btn-sm btn-outline-primary edit-btn'>Edit</button> \
+                &nbsp;&nbsp;<button class='btn btn-sm btn-outline-danger delete-btn'>Delete</button>"
+            }
         ]
     });
 
-    // SELECT
-    $('#snf-table tbody').on('click', 'tr', function () {
-        if ($(this).hasClass('selected')) {
-            $(this).removeClass('selected');
-        } else {
-            table.$('tr.selected').removeClass('selected');
-            $(this).addClass('selected');
-        }
-    });
+
 
     // ADD
     $('#addSNF').on('click', function (e) {
@@ -172,18 +222,17 @@ $(document).ready(function() {
         });
     });
 
+
     // DELETE
     // Notes:  When sending data with a DELETE request via AJAX, Django doesn't automatically parse the request body
     // into request.POST like it does with POST requests. Thus, we need to manually create the JSON object and send it
     // below via JSON.stringify
-    $('#deleteSNF').on('click', function () {
-        var selectedRow = table.row('.selected');
-        if (!selectedRow.any()) {
-            alert('Please select a row to delete.');
-            return;
-        }
-        var data = selectedRow.data();
+    $('#snf-table tbody').on('click', '.delete-btn', function (e) {
+
+        var row = table.row($(this).closest('tr')); // Capture the row before the AJAX call
+        var data = row.data();
         var snfID = data.id;
+
         console.log("Deleting SNF with ID:", snfID);
 
         $.ajax({
@@ -200,7 +249,10 @@ $(document).ready(function() {
                 var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
                 $("#toastMessage").text("SNF with ID " + snfID + " has been removed successfully.");
                 toast.show();
-                selectedRow.remove().draw(false);
+
+                // Remove the row from the table
+                row.remove().draw(false);
+
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
@@ -213,6 +265,48 @@ $(document).ready(function() {
         table.ajax.reload();
     });
 
+    // EDIT (Show modal to edit SNF)
+    $('#snf-table tbody').on('click', '.edit-btn', function (e) {
+        console.log("Edit button clicked");
+        e.preventDefault();
+        var data = table.row($(this).parents('tr')).data();
+        $('#edit_snf_id').val(data.id);
+        $('#edit_snf_name').val(data.name);
+        $('#edit_snf_address').val(data.address);
+        $('#edit_snf_phone').val(data.phone);
+        $('#edit_hour_opens').val(data.hour_opens);
+        $('#edit_hour_closes').val(data.hour_closes);
+        $('#edit_max_concurrent_appointments').val(data.max_concurrent_appointments);
+        $('#editSNFModal').modal('show');
+    });
+
+    // UPDATE (Submit edit form)
+    $('#updateSNF').on('click', function (e) {
+        e.preventDefault();
+        var formData = $('#editSNFForm').serialize();
+
+        $.ajax({
+            url: "{% url 'main:edit_snf' %}",
+            type: "PUT",
+            data: JSON.stringify(formData),
+            headers: {
+                "X-CSRFToken": "{{ csrf_token }}",
+                "X-HTTP-Method-Override": "PUT"
+            },
+            success: function(response) {
+                console.log("SNF updated successfully");
+                $('#editSNFModal').modal('hide');
+                var toastElement = $('#snfToast');
+                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
+                $("#toastMessage").text("SNF has been updated successfully.");
+                toast.show();
+                table.ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                console.error('Error updating SNF:', error);
+            }
+        });
+    });
 });
 </script>
 {% endblock %}
