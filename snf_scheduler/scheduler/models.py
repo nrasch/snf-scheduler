@@ -20,6 +20,7 @@ class SNF(models.Model):
 class Patient(models.Model):
     first_name = models.CharField(max_length=30, verbose_name="First Name")
     last_name = models.CharField(max_length=30, verbose_name="Last Name")
+    #address = models.TextField(verbose_name="Address")
     date_of_birth = models.DateField(verbose_name="Date of Birth")
     date_of_last_appointment = models.DateField(null=True, blank=True, verbose_name="Last Appointment Date")
     date_of_next_appointment = models.DateField(null=True, blank=True, verbose_name="Next Appointment Date")

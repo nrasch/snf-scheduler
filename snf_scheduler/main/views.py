@@ -72,9 +72,9 @@ def delete_snf(request):
 def add_snf(request):
     if request.method == 'POST':
         snf_data = {
-            'name': request.POST.get('snf_name'),
-            'address': request.POST.get('snf_address'),
-            'phone': request.POST.get('snf_phone', '000-000-0000'),  # Default value if not provided
+            'name': request.POST.get('name'),
+            'address': request.POST.get('address'),
+            'phone': request.POST.get('phone', '000-000-0000'),  # Default value if not provided
             'hour_opens': request.POST.get('hour_opens', '08:00'),  # Default opening time
             'hour_closes': request.POST.get('hour_closes', '17:00'),  # Default closing time
             'max_concurrent_appointments': int(request.POST.get('max_concurrent_appointments', 0))  # Default to 0
@@ -175,8 +175,6 @@ def edit_snf(request):
 #####################
 @login_required
 @require_http_methods(["GET"])
-@login_required
-@require_http_methods(["GET"])
 def list_patients(request):
     patients = Patient.objects.all()
 
@@ -192,6 +190,8 @@ def list_patients(request):
                 data.append({
                     'id': patient.id,
                     'name': patient.name, # Directly using the name property from the model
+                    'first_name': patient.first_name,
+                    'last_name': patient.last_name,
                     'date_of_birth': patient.date_of_birth,
                     'age': patient.age,  # Directly using the age property from the model
                     'date_of_last_appointment': patient.date_of_last_appointment,
@@ -271,3 +271,41 @@ def get_patient(request):
             return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+@require_http_methods(["PUT"])
+def edit_patient(request):
+    # Parse the URL-encoded data
+    data = urllib.parse.parse_qs(request.body.decode('utf-8'))
+
+    # Clean and convert data
+    patient_data = {}
+    for key, value in data.items():
+        patient_data[key] = value[0].strip().strip('"')
+
+    if 'active' not in data.keys():
+        patient_data['active'] = False
+    else:
+        patient_data['active'] = True
+
+    patient_id = patient_data.get('patient_id')
+    if not patient_id:
+        return JsonResponse({'success': False, 'error': 'Patient ID is required.'}, status=400)
+
+    try:
+        # Retrieve the Patient object
+        patient = Patient.objects.get(id=patient_id)
+
+        # Update the Patient object
+        for key, value in patient_data.items():
+            if hasattr(patient, key):
+                setattr(patient, key, value)
+
+        # Save changes
+        patient.save()
+        return JsonResponse({'success': True, 'message': 'Patient updated successfully.'})
+
+    except Patient.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

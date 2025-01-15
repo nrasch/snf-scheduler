@@ -74,84 +74,91 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="snf_name" class="form-label">SNF Name</label>
-                                <input type="text" class="form-control" id="snf_name" name="snf_name" required>
+                                <input type="text" class="form-control" id="snf_name" name="name" required aria-describedby="nameHelp">
+                                <div id="nameHelp" class="form-text">Enter the full name of the SNF.</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="snf_address" class="form-label">SNF Address</label>
-                                <input type="text" class="form-control" id="snf_address" name="snf_address" required>
+                                <input type="text" class="form-control" id="snf_address" name="address" required aria-describedby="addressHelp">
+                                <div id="addressHelp" class="form-text">Please provide the complete address.</div>
                             </div>
                             <div class="col-md-6">
                                 <label for="snf_phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="snf_phone" name="snf_phone" value="000-000-0000" required>
+                                <input type="tel" class="form-control" id="snf_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
+                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
                             </div>
                             <div class="col-md-3">
                                 <label for="hour_opens" class="form-label">Opening Hour</label>
-                                <input type="time" class="form-control" id="hour_opens" name="hour_opens" value="08:00" required>
+                                <input type="time" class="form-control" id="hour_opens" name="hour_opens" value="08:00" required aria-label="Opening time">
                             </div>
                             <div class="col-md-3">
                                 <label for="hour_closes" class="form-label">Closing Hour</label>
-                                <input type="time" class="form-control" id="hour_closes" name="hour_closes" value="17:00" required>
+                                <input type="time" class="form-control" id="hour_closes" name="hour_closes" value="17:00" required aria-label="Closing time">
                             </div>
                             <div class="col-md-6">
                                 <label for="max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
-                                <input type="number" class="form-control" id="max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required>
+                                <input type="number" class="form-control" id="max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required aria-describedby="appointmentHelp">
+                                <div id="appointmentHelp" class="form-text">Enter the maximum number of appointments that can be scheduled at the same time.</div>
                             </div>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" form="snfForm" class="btn btn-primary" id="addSNF">Add SNF</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-<!-- Modal for editing SNF -->
-<div class="modal fade" id="editSNFModal" tabindex="-1" aria-labelledby="editSNFModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editSNFModalLabel">Edit SNF</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="post" id="editSNFForm">
-                    {% csrf_token %}
-                    <input type="hidden" id="edit_snf_id" name="snf_id">
-                    <!-- Here, replicate the form fields from your add modal with 'edit_' prefix -->
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="edit_snf_name" class="form-label">SNF Name</label>
-                            <input type="text" class="form-control" id="edit_snf_name" name="snf_name" required>
+
+    <!-- Modal for editing SNF -->
+    <div class="modal fade" id="editSNFModal" tabindex="-1" aria-labelledby="editSNFModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSNFModalLabel">Edit SNF</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="post" id="editSNFForm">
+                        {% csrf_token %}
+                        <input type="hidden" id="edit_snf_id" name="snf_id">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="edit_snf_name" class="form-label">SNF Name</label>
+                                <input type="text" class="form-control" id="edit_snf_name" name="name" required aria-describedby="nameHelp">
+                                <div id="nameHelp" class="form-text">Enter the full name of the SNF.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_snf_address" class="form-label">SNF Address</label>
+                                <input type="text" class="form-control" id="edit_snf_address" name="address" required aria-describedby="addressHelp">
+                                <div id="addressHelp" class="form-text">Please provide the complete address.</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_snf_phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="edit_snf_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
+                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="edit_hour_opens" class="form-label">Opening Hour</label>
+                                <input type="time" class="form-control" id="edit_hour_opens" name="hour_opens" value="08:00" required aria-label="Opening time">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="edit_hour_closes" class="form-label">Closing Hour</label>
+                                <input type="time" class="form-control" id="edit_hour_closes" name="hour_closes" value="17:00" required aria-label="Closing time">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit_max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
+                                <input type="number" class="form-control" id="edit_max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required aria-describedby="appointmentHelp">
+                                <div id="appointmentHelp" class="form-text">Enter the maximum number of appointments that can be scheduled at the same time.</div>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label for="edit_snf_address" class="form-label">SNF Address</label>
-                            <input type="text" class="form-control" id="edit_snf_address" name="snf_address" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_snf_phone" class="form-label">Phone Number</label>
-                            <input type="text" class="form-control" id="edit_snf_phone" name="snf_phone" value="000-000-0000" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="edit_hour_opens" class="form-label
-                            ">Opening Hour</label>
-                            <input type="time" class="form-control" id="edit_hour_opens" name="hour_opens" value="08:00" required>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="edit_hour_closes" class="form-label">Closing Hour</label>
-                            <input type="time" class="form-control" id="edit_hour_closes" name="hour_closes" value="17:00" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="edit_max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
-                            <input type="number" class="form-control" id="edit_max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required>
-                        </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" form="editSNFForm" class="btn btn-primary" id="updateSNF">Update SNF</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" form="editSNFForm" class="btn btn-primary" id="updateSNF">Update SNF</button>
+                </div>
             </div>
         </div>
     </div>
@@ -182,11 +189,11 @@ $(document).ready(function() {
             { "data": "hour_opens" },
             { "data": "hour_closes" },
             { "data": "max_concurrent_appointments" },
-            { "data": null } // New column for the edit button
+            { "data": null } // Column to hold custom form actions (buttons, etc.)
         ],
         "columnDefs": [
             {
-                // Here we define the content of the last column
+                // Define custom form actions
                 "targets": -1, // Targets the last column
                 "data": null,
                 "defaultContent": "<button class='btn btn-sm btn-outline-primary edit-btn'>Edit</button> \
@@ -194,7 +201,6 @@ $(document).ready(function() {
             }
         ]
     });
-
 
 
     // ADD
@@ -252,13 +258,13 @@ $(document).ready(function() {
 
                 // Remove the row from the table
                 row.remove().draw(false);
-
             },
             error: function(xhr, status, error) {
                 console.error('Error:', error);
             }
         });
     });
+
 
     // REFRESH
     $('#refreshData').on('click', function() {
@@ -279,6 +285,7 @@ $(document).ready(function() {
         $('#edit_max_concurrent_appointments').val(data.max_concurrent_appointments);
         $('#editSNFModal').modal('show');
     });
+
 
     // UPDATE (Submit edit form)
     $('#updateSNF').on('click', function (e) {
