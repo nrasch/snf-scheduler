@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 import json
 import urllib.parse
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import SNFForm
+from django.urls import reverse
 
 
 # Create your views here.
@@ -17,6 +20,56 @@ def home(request):
 #################
 ### SNF Views ###
 #################
+
+@login_required
+def create_snf(request):
+    if request.method == 'POST':
+        form = SNFForm(request.POST)
+        if form.is_valid():
+            snf = form.save()
+            #return JsonResponse({'success': True})
+            return redirect('/main/snf-detail/', pk=snf.pk)
+            #return redirect(reverse('snf_detail'), kwargs={'pk': snf.pk})
+    else:
+        #return JsonResponse({'success': False, 'error': form.errors}, status=400)
+        form = SNFForm()
+
+    return render(request, 'main/create_snf.html', {'form': form})
+    #return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+@login_required
+@require_http_methods(["GET"])
+def snf_detail(request, pk):
+    snf = SNF.objects.get(pk=pk)
+    return render(request, 'main/snf_detail.html', {'snf': snf})
+
+@login_required
+def mod_snf(request, pk):
+    snf = get_object_or_404(SNF, pk=pk)
+
+    if request.method == 'POST':
+        form = SNFForm(request.POST, instance=snf)
+        if form.is_valid():
+            snf = form.save()
+            return redirect(reverse('main:snf_detail', kwargs={'pk': pk}))
+            #return JsonResponse({'success': True})  # Return success message
+        else:
+            context = {'form': form}
+            return render(request, 'main/edit_snf.html', context)
+            #form_html = render(request, 'main/edit_snf.html', context).content.decode('utf-8')
+            #return JsonResponse({'success': False, 'form': form_html})  # Return form with errors
+    else:
+        #return JsonResponse({'success': False, 'error': form.errors}, status=400)
+        form = SNFForm(instance=snf)
+
+    return render(request, 'main/edit_snf.html', {'form': form})
+    #return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+
+
+
+
+
 @login_required
 @require_http_methods(["GET"])
 def list_snfs(request):
@@ -122,53 +175,21 @@ def get_snf(request):
 
 
 @login_required
-@require_http_methods(["PUT"])
-def edit_snf(request):
-    # Parse the URL-encoded data
-    data = urllib.parse.parse_qs(request.body.decode('utf-8'))
+def edit_snf(request, pk):
+    if request.method == 'GET':
+        snf = SNF.objects.get(pk=pk)
+        form = SNFForm(instance=snf)
+        return render(request, 'main/edit_snf.html', {'form': form})
 
-    # Clean and convert data
-    snf_data = {}
-    for key, value in data.items():
-        cleaned_value = value[0].strip().strip('"')
+    if request.method == 'POST':
+        snf = SNF.objects.get(pk=pk)
+        form = SNFForm(request.POST, instance=snf)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return render(request, 'main/edit_snf.html', {'form': form})
 
-        if key == "max_concurrent_appointments":
-            try:
-                snf_data[key] = int(cleaned_value)
-            except ValueError:
-                return JsonResponse({'success': False, 'error': f'Invalid value for {key}: {cleaned_value}'},
-                                    status=400)
-        elif key in ['hour_opens', 'hour_closes']:
-            try:
-                snf_data[key] = timezone.datetime.strptime(cleaned_value, '%H:%M:%S').time()
-            except ValueError:
-                return JsonResponse({'success': False, 'error': f'Invalid time format for {key}: {cleaned_value}'},
-                                    status=400)
-        else:
-            snf_data[key] = cleaned_value
-
-    snf_id = snf_data.get('snf_id')
-    if not snf_id:
-        return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
-
-    try:
-        # Retrieve the SNF object
-        snf = SNF.objects.get(id=snf_id)
-
-        # Update the SNF object
-        for key, value in snf_data.items():
-            if hasattr(snf, key):
-                setattr(snf, key, value)
-
-        # Save changes
-        snf.save()
-        return JsonResponse({'success': True, 'message': 'SNF updated successfully.'})
-
-    except SNF.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 #####################
 ### Patient Views ###

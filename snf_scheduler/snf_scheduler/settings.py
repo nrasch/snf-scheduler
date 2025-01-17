@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django_bootstrap_icons',
     'holidays',
     'main',
+    'widget_tweaks'
 ]
 
 MIDDLEWARE = [

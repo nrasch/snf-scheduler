@@ -43,3 +43,15 @@ html, body {
 .api-endpoint:last-child {
     border-bottom: none;
 }
+
+.has-error {
+    border: 1px solid #dc3545; /* Red border around the field container */
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545; /* Red border for the input field */
+}
+
+label.text-danger {
+    color: #dc3545; /* Red text for the label */
+}

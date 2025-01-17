@@ -1,0 +1,35 @@
+{% load widget_tweaks %}
+<div class="modal-body">
+    <form method="post" id="editSNFForm" novalidate>
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert alert-danger">
+                <p>Please correct the errors below.</p>
+            </div>
+        {% endif %}
+
+        {{ form.non_field_errors }}  {# Errors not associated with a specific field #}
+
+        <div class="row g-3">
+            {% for field in form %}
+                <div class="col-md-6 {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.id_for_label }}" class="form-label {% if field.errors %}text-danger{% endif %}">{{ field.label }}</label></br>
+                    {% if field.errors %}
+                        {{ field|add_class:"form-control is-invalid" }}
+                    {% else %}
+                        {{ field|add_class:"form-control" }}
+                    {% endif %}
+                    {% if field.errors %}
+                        <div class="invalid-feedback">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <div id="{{ field.id_for_label }}Help" class="form-text">{{ field.help_text }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </form>
+</div>

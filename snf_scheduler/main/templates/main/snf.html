@@ -119,41 +119,8 @@
                     <h5 class="modal-title" id="editSNFModalLabel">Edit SNF</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form method="post" id="editSNFForm">
-                        {% csrf_token %}
-                        <input type="hidden" id="edit_snf_id" name="snf_id">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="edit_snf_name" class="form-label">SNF Name</label>
-                                <input type="text" class="form-control" id="edit_snf_name" name="name" required aria-describedby="nameHelp">
-                                <div id="nameHelp" class="form-text">Enter the full name of the SNF.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_snf_address" class="form-label">SNF Address</label>
-                                <input type="text" class="form-control" id="edit_snf_address" name="address" required aria-describedby="addressHelp">
-                                <div id="addressHelp" class="form-text">Please provide the complete address.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_snf_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="edit_snf_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
-                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="edit_hour_opens" class="form-label">Opening Hour</label>
-                                <input type="time" class="form-control" id="edit_hour_opens" name="hour_opens" value="08:00" required aria-label="Opening time">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="edit_hour_closes" class="form-label">Closing Hour</label>
-                                <input type="time" class="form-control" id="edit_hour_closes" name="hour_closes" value="17:00" required aria-label="Closing time">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
-                                <input type="number" class="form-control" id="edit_max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required aria-describedby="appointmentHelp">
-                                <div id="appointmentHelp" class="form-text">Enter the maximum number of appointments that can be scheduled at the same time.</div>
-                            </div>
-                        </div>
-                    </form>
+                <div id="editModalBodyContent">
+                    <-- Form content will be loaded here -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -271,49 +238,57 @@ $(document).ready(function() {
         table.ajax.reload();
     });
 
+
     // EDIT (Show modal to edit SNF)
     $('#snf-table tbody').on('click', '.edit-btn', function (e) {
-        console.log("Edit button clicked");
         e.preventDefault();
-        var data = table.row($(this).parents('tr')).data();
-        $('#edit_snf_id').val(data.id);
-        $('#edit_snf_name').val(data.name);
-        $('#edit_snf_address').val(data.address);
-        $('#edit_snf_phone').val(data.phone);
-        $('#edit_hour_opens').val(data.hour_opens);
-        $('#edit_hour_closes').val(data.hour_closes);
-        $('#edit_max_concurrent_appointments').val(data.max_concurrent_appointments);
-        $('#editSNFModal').modal('show');
-    });
-
-
-    // UPDATE (Submit edit form)
-    $('#updateSNF').on('click', function (e) {
-        e.preventDefault();
-        var formData = $('#editSNFForm').serialize();
+        var snfID = table.row($(this).parents('tr')).data().id;
+        var url = "{% url 'main:edit_snf' 0 %}".replace('0', snfID);
+        console.log(url)
 
         $.ajax({
-            url: "{% url 'main:edit_snf' %}",
-            type: "PUT",
-            data: JSON.stringify(formData),
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "X-HTTP-Method-Override": "PUT"
-            },
+            url: url,
+            type: "GET",
             success: function(response) {
-                console.log("SNF updated successfully");
-                $('#editSNFModal').modal('hide');
-                var toastElement = $('#snfToast');
-                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
-                $("#toastMessage").text("SNF has been updated successfully.");
-                toast.show();
-                table.ajax.reload();
+                $('#editModalBodyContent').html(response);
+                $('#editSNFModal').modal('show');
+
+                // Attaching submit handler to the form
+                $('#editSNFModal').on('submit', '#editSNFForm', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: $(this).serialize(), // Serialize the form data
+                        success: function(form_response) {
+                            if (form_response.success) {
+                                // Form submitted successfully
+                                $('#editSNFModal').modal('hide');
+                                table.ajax.reload(); // Reload the table
+                            } else {
+                                // Form has errors, replace the modal content
+                                //console.log('Form has errors:', form_response);
+                                $('#editModalBodyContent').html(form_response);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            // Handle error (e.g., display an error message)
+                        }
+                    });
+                });
             },
             error: function(xhr, status, error) {
-                console.error('Error updating SNF:', error);
+                console.error('Error:', error);
             }
         });
     });
+
+
+
+
+
 });
 </script>
 {% endblock %}
