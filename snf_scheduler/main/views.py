@@ -3,12 +3,10 @@ from scheduler.models import SNF, Patient, Appointment, AppointmentNote, Patient
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
-from django.utils import timezone
 import json
 import urllib.parse
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import SNFForm
-from django.urls import reverse
 
 
 # Create your views here.
@@ -20,56 +18,6 @@ def home(request):
 #################
 ### SNF Views ###
 #################
-
-@login_required
-def create_snf(request):
-    if request.method == 'POST':
-        form = SNFForm(request.POST)
-        if form.is_valid():
-            snf = form.save()
-            #return JsonResponse({'success': True})
-            return redirect('/main/snf-detail/', pk=snf.pk)
-            #return redirect(reverse('snf_detail'), kwargs={'pk': snf.pk})
-    else:
-        #return JsonResponse({'success': False, 'error': form.errors}, status=400)
-        form = SNFForm()
-
-    return render(request, 'main/create_snf.html', {'form': form})
-    #return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
-
-@login_required
-@require_http_methods(["GET"])
-def snf_detail(request, pk):
-    snf = SNF.objects.get(pk=pk)
-    return render(request, 'main/snf_detail.html', {'snf': snf})
-
-@login_required
-def mod_snf(request, pk):
-    snf = get_object_or_404(SNF, pk=pk)
-
-    if request.method == 'POST':
-        form = SNFForm(request.POST, instance=snf)
-        if form.is_valid():
-            snf = form.save()
-            return redirect(reverse('main:snf_detail', kwargs={'pk': pk}))
-            #return JsonResponse({'success': True})  # Return success message
-        else:
-            context = {'form': form}
-            return render(request, 'main/edit_snf.html', context)
-            #form_html = render(request, 'main/edit_snf.html', context).content.decode('utf-8')
-            #return JsonResponse({'success': False, 'form': form_html})  # Return form with errors
-    else:
-        #return JsonResponse({'success': False, 'error': form.errors}, status=400)
-        form = SNFForm(instance=snf)
-
-    return render(request, 'main/edit_snf.html', {'form': form})
-    #return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
-
-
-
-
-
-
 @login_required
 @require_http_methods(["GET"])
 def list_snfs(request):
@@ -99,57 +47,6 @@ def list_snfs(request):
 
 
 @login_required
-@require_http_methods(["DELETE"])
-def delete_snf(request):
-    if request.method == 'DELETE':
-        # Since we are sending data in the body of a DELETE request, we will
-        # use request.body to get the data instead of request.DELETE
-        data = json.loads(request.body)
-        snf_id = data.get('snf_id')
-
-        if not snf_id:
-            return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
-
-        try:
-            snf = SNF.objects.get(id=snf_id)
-            snf.delete()
-            return JsonResponse({'success': True})
-        except SNF.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-
-@login_required
-@require_http_methods(["POST"])
-def add_snf(request):
-    if request.method == 'POST':
-        snf_data = {
-            'name': request.POST.get('name'),
-            'address': request.POST.get('address'),
-            'phone': request.POST.get('phone', '000-000-0000'),  # Default value if not provided
-            'hour_opens': request.POST.get('hour_opens', '08:00'),  # Default opening time
-            'hour_closes': request.POST.get('hour_closes', '17:00'),  # Default closing time
-            'max_concurrent_appointments': int(request.POST.get('max_concurrent_appointments', 0))  # Default to 0
-        }
-
-        try:
-            # Convert string times to time objects
-            snf_data['hour_opens'] = timezone.datetime.strptime(snf_data['hour_opens'], '%H:%M').time()
-            snf_data['hour_closes'] = timezone.datetime.strptime(snf_data['hour_closes'], '%H:%M').time()
-
-            snf = SNF(**snf_data)
-            snf.save()
-            return JsonResponse({'success': True})
-        except ValueError as ve:
-            # Handle if the time format is incorrect
-            return JsonResponse({'success': False, 'error': f'Invalid time format: {str(ve)}'}, status=400)
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
-
-
-@login_required
 @require_http_methods(["GET"])
 def get_snf(request):
     if request.GET.get('snf_id'):
@@ -175,6 +72,22 @@ def get_snf(request):
 
 
 @login_required
+def add_snf(request):
+    if request.method == 'GET':
+        form = SNFForm()
+        return render(request, 'main/add_snf.html', {'form': form})
+
+    if request.method == 'POST':
+        form = SNFForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return render(request, 'main/add_snf.html', {'form': form})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+
+@login_required
 def edit_snf(request, pk):
     if request.method == 'GET':
         snf = SNF.objects.get(pk=pk)
@@ -190,6 +103,29 @@ def edit_snf(request, pk):
         return render(request, 'main/edit_snf.html', {'form': form})
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+
+@login_required
+@require_http_methods(["DELETE"])
+def delete_snf(request):
+    if request.method == 'DELETE':
+        # Since we are sending data in the body of a DELETE request, we will
+        # use request.body to get the data instead of request.DELETE
+        data = json.loads(request.body)
+        snf_id = data.get('snf_id')
+
+        if not snf_id:
+            return JsonResponse({'success': False, 'error': 'SNF ID is required.'}, status=400)
+
+        try:
+            snf = SNF.objects.get(id=snf_id)
+            snf.delete()
+            return JsonResponse({'success': True})
+        except SNF.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'SNF not found.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
 
 #####################
 ### Patient Views ###

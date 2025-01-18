@@ -1,6 +1,6 @@
 {% load widget_tweaks %}
-<div class="modal-body" id="editModalBodyContainer">
-    <form method="post" id="editSNFForm" novalidate>
+<div class="modal-body" id="addModalBodyContainer">
+    <form method="post" id="addSNFForm" novalidate>
         {% csrf_token %}
 
         {% if form.errors %}

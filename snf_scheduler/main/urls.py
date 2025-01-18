@@ -8,7 +8,6 @@ urlpatterns = [
     path('snf/list', views.list_snfs, name='list_snfs'),
     path('snf/delete/', views.delete_snf, name='delete_snf'),
     path('snf/add/', views.add_snf, name='add_snf'),
-    #path('get-snf/', views.get_snf, name='get_snf'),
     path('snf/<int:pk>/', views.get_snf, name='get_snf'),
     path('snf/edit/<int:pk>/', views.edit_snf, name='edit_snf'),
 
@@ -17,8 +16,4 @@ urlpatterns = [
     path('add-patient/', views.add_patient, name='add_patient'),
     path('get-patient/', views.get_patient, name='get_patient'),
     path('edit-patient/', views.edit_patient, name='edit_patient'),
-
-    path('create-snf/', views.create_snf, name='create_snf'),
-    path('snf-detail/<int:pk>/', views.snf_detail, name='snf_detail'),
-    path('snf/<int:pk>/mod/', views.mod_snf, name='mod_snf'),
 ]

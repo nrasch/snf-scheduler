@@ -53,12 +53,8 @@
     </table>
 
     <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addSNFModal">
-        Add SNF
-    </button>
-    <button type="button" class="btn btn-secondary mt-3" id="refreshData">
-        Refresh Data
-    </button>
+    <button type="button" class="btn btn-primary mt-3" id="addNewSNF">Add SNF</button>
+    <button type="button" class="btn btn-secondary mt-3" id="refreshData">Refresh Data</button>
 
     <!-- Modal for Adding SNF -->
     <div class="modal fade" id="addSNFModal" tabindex="-1" aria-labelledby="addSNFModalLabel" aria-hidden="true">
@@ -68,44 +64,12 @@
                     <h5 class="modal-title" id="addSNFModalLabel">Add New SNF</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <form method="post" id="snfForm">
-                        {% csrf_token %}
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="snf_name" class="form-label">SNF Name</label>
-                                <input type="text" class="form-control" id="snf_name" name="name" required aria-describedby="nameHelp">
-                                <div id="nameHelp" class="form-text">Enter the full name of the SNF.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="snf_address" class="form-label">SNF Address</label>
-                                <input type="text" class="form-control" id="snf_address" name="address" required aria-describedby="addressHelp">
-                                <div id="addressHelp" class="form-text">Please provide the complete address.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="snf_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="snf_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
-                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
-                            </div>
-                            <div class="col-md-3">
-                                <label for="hour_opens" class="form-label">Opening Hour</label>
-                                <input type="time" class="form-control" id="hour_opens" name="hour_opens" value="08:00" required aria-label="Opening time">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="hour_closes" class="form-label">Closing Hour</label>
-                                <input type="time" class="form-control" id="hour_closes" name="hour_closes" value="17:00" required aria-label="Closing time">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="max_concurrent_appointments" class="form-label">Max Concurrent Appointments</label>
-                                <input type="number" class="form-control" id="max_concurrent_appointments" name="max_concurrent_appointments" min="0" value="0" required aria-describedby="appointmentHelp">
-                                <div id="appointmentHelp" class="form-text">Enter the maximum number of appointments that can be scheduled at the same time.</div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+                    <div id="addModalBodyContent">
+                        <-- Form content will be loaded here -->
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="snfForm" class="btn btn-primary" id="addSNF">Add SNF</button>
+                    <button type="button" form="addSNFForm" class="btn btn-primary" id="addSNFBtn">Add SNF</button>
                 </div>
             </div>
         </div>
@@ -119,9 +83,9 @@
                     <h5 class="modal-title" id="editSNFModalLabel">Edit SNF</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div id="editModalBodyContent">
-                    <-- Form content will be loaded here -->
-                </div>
+                    <div id="editModalBodyContent">
+                        <-- Form content will be loaded here -->
+                    </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" form="editSNFForm" class="btn btn-primary" id="updateSNF">Update SNF</button>
@@ -170,27 +134,60 @@ $(document).ready(function() {
     });
 
 
-    // ADD
-    $('#addSNF').on('click', function (e) {
-        e.preventDefault();
-        var formData = $('#snfForm').serialize();
+    // REFRESH
+    $('#refreshData').on('click', function() {
+        table.ajax.reload();
+    });
+
+
+    // NEW ADD (Show modal to add new SNF)
+    $('#addNewSNF').on('click', function (e) {
+        var url = "{% url 'main:add_snf' %}";
+        console.log(url);
 
         $.ajax({
-            url: "{% url 'main:add_snf' %}",
-            type: "POST",
-            data: formData,
+            url: url,
+            type: "GET",
             success: function(response) {
-                console.log("SNF added successfully");
-                $('#addSNFModal').modal('hide');
-                $('#snfForm')[0].reset();
-                var toastElement = $('#snfToast');
-                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
-                $("#toastMessage").text("SNF has been added successfully.");
-                toast.show();
-                table.ajax.reload();
+                $('#addModalBodyContent').html(response);
+                $('#addSNFModal').modal('show');
+
+                // Attaching submit handler to the form
+                // Remove existing event handlers before attaching new ones
+                // Otherwise we end up with multiple form submissions
+                $('#addSNFBtn').off('click').on('click', function(event) {
+                    event.preventDefault(); // Prevent default form submission
+
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        headers: {
+                            "X-CSRFToken": "{{ csrf_token }}",
+                            "Content-Type": "application/x-www-form-urlencoded"
+                        },
+                        data: $('#addSNFForm').serialize(), // Serialize the form data
+                        success: function(form_response) {
+                            if (form_response.success) {
+                                // Form submitted successfully
+                                $('#addSNFModal').modal('hide');
+                                table.ajax.reload(); // Reload the table
+
+                                // Remove the modal body content
+                                $('#addModalBodyContainer').remove();
+                            } else {
+                                // Form has errors, replace the modal content
+                                $('#addModalBodyContent').html(form_response);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Error:', error);
+                            // Handle error (e.g., display an error message)
+                        }
+                    });
+                });
             },
             error: function(xhr, status, error) {
-                console.error('Error adding SNF:', error);
+                console.error('Error:', error);
             }
         });
     });
@@ -232,19 +229,25 @@ $(document).ready(function() {
         });
     });
 
+    // EDIT EVENTS
+    // Listen for the edit modal hide event
+    // So previous views of the form don't contaminate other views of the form
+    $('#editSNFModal').on('hidden.bs.modal', function (e) {
+        // Remove event handlers from the update button
+        $('#updateSNF').off('click');
 
-    // REFRESH
-    $('#refreshData').on('click', function() {
-        table.ajax.reload();
+        // Remove all submit handlers from the form within the modal
+        $('#editSNFModal').off('submit', '#editSNFForm');
+
+        // Remove the form from the DOM
+        $('#editModalBodyContent').empty();
     });
 
-
-    // EDIT (Show modal to edit SNF)
+    // EDIT MODAL
     $('#snf-table tbody').on('click', '.edit-btn', function (e) {
         e.preventDefault();
         var snfID = table.row($(this).parents('tr')).data().id;
         var url = "{% url 'main:edit_snf' 0 %}".replace('0', snfID);
-        console.log(url)
 
         $.ajax({
             url: url,
@@ -254,7 +257,7 @@ $(document).ready(function() {
                 $('#editSNFModal').modal('show');
 
                 // Attaching submit handler to the form
-                $('#editSNFModal').on('submit', '#editSNFForm', function(event) {
+                $(document).off('submit', '#editSNFForm').on('submit', '#editSNFForm', function(event) {
                     event.preventDefault(); // Prevent default form submission
 
                     $.ajax({
@@ -268,13 +271,12 @@ $(document).ready(function() {
                                 table.ajax.reload(); // Reload the table
                             } else {
                                 // Form has errors, replace the modal content
-                                //console.log('Form has errors:', form_response);
                                 $('#editModalBodyContent').html(form_response);
                             }
                         },
                         error: function(xhr, status, error) {
                             console.error('Error:', error);
-                            // Handle error (e.g., display an error message)
+                            // The modal form will display errors to the user...
                         }
                     });
                 });
@@ -284,10 +286,6 @@ $(document).ready(function() {
             }
         });
     });
-
-
-
-
 
 });
 </script>
