@@ -1,5 +1,5 @@
 from django import forms
-from scheduler.models import SNF
+from scheduler.models import SNF, Patient, Appointment, AppointmentNote, PatientNote
 
 class SNFForm(forms.ModelForm):
     class Meta:
@@ -7,6 +7,7 @@ class SNFForm(forms.ModelForm):
         fields = ['id', 'name', 'description', 'address', 'phone', 'hour_opens', 'hour_closes', 'max_concurrent_appointments']
         widgets = {
             'id': forms.HiddenInput(),
+            'name': forms.TextInput(attrs={'autofocus': 'autofocus'}),  # Set focus to this field
             'description': forms.Textarea(attrs={'rows': 3}),  # Adjust rows as needed
             'address': forms.Textarea(attrs={'rows': 2}),
             'hour_opens': forms.TimeInput(attrs={'type': 'time'}),
@@ -67,3 +68,41 @@ class SNFForm(forms.ModelForm):
             raise forms.ValidationError("Opening time must be before closing time.")
 
         return cleaned_data
+
+
+class PatientForm(forms.ModelForm):
+    class Meta:
+        model = Patient
+        fields = ['id', 'first_name', 'last_name', 'date_of_birth', 'active']
+        widgets = {
+            'id': forms.HiddenInput(),
+            'first_name': forms.TextInput(attrs={'autofocus': 'autofocus'}),  # Set focus to this field
+            'last_name': forms.TextInput(),
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'active': forms.CheckboxInput(),
+        }
+        labels = {
+            'first_name': 'First Name',
+            'last_name': 'Last Name',
+        }
+        help_texts = {
+            'phone': 'Enter phone number in format XXX-XXX-XXXX',
+            'date_of_birth': 'Date of birth',
+        }
+        error_messages = {
+            'first_name': {
+                'required': "First Name is required.",
+            },
+            'last_name': {
+                'required': "Last Name is required.",
+            },
+            'date_of_birth': {
+                'required': "Date of birth is required.",
+                'invalid': "Enter a valid date.",
+            }
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'snf_id' in self.data:
+            self.fields['patient_id'].required = True

@@ -1,0 +1,56 @@
+{% load widget_tweaks %}
+<!-- Modal for Editing Patient -->
+<div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editPatientModalLabel">Edit New Patient</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                <div id="editModalBodyContent">
+
+                    <div class="modal-body" id="editModalBodyContainer">
+                        <form method="post" id="editPatientForm" novalidate>
+                            {% csrf_token %}
+                            {% if form.errors %}
+                                <div class="alert alert-danger">
+                                    <p>Please correct the errors below.</p>
+                                </div>
+                            {% endif %}
+
+                            {{ form.non_field_errors }}  {# Errors not associated with a specific field #}
+
+                            <div class="row g-3">
+                                {% for field in form %}
+                                    <div class="col-md-6 {% if field.errors %}has-error{% endif %}">
+                                        <label for="{{ field.id_for_label }}"
+                                               class="form-label {% if field.errors %}text-danger{% endif %}">
+                                                    {{ field.label }}
+                                        </label></br>
+                                        {% if field.errors %}
+                                            {{ field|add_class:"form-control is-invalid" }}
+                                        {% else %}
+                                            {{ field|add_class:"form-control" }}
+                                        {% endif %}
+                                        {% if field.errors %}
+                                            <div class="invalid-feedback">
+                                                {{ field.errors }}
+                                            </div>
+                                        {% endif %}
+                                        {% if field.help_text %}
+                                            <div id="{{ field.id_for_label }}Help" class="form-text">{{ field.help_text }}</div>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="cancelPatientBtn">Cancel</button>
+                <button type="button" form="editPatientForm" class="btn btn-primary" id="editPatientBtn">Edit Patient</button>
+            </div>
+        </div>
+    </div>
+</div>

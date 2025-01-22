@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 import json
 import urllib.parse
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import SNFForm
+from .forms import SNFForm, PatientForm
 
 
 # Create your views here.
@@ -127,6 +127,7 @@ def delete_snf(request):
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 
+
 #####################
 ### Patient Views ###
 #####################
@@ -167,12 +168,29 @@ def list_patients(request):
         context = {'patients': patients}
         return render(request, 'main/patient.html', context)
 
+
 @login_required
-@require_http_methods(["DELETE"])
+def add_patient(request):
+    if request.method == 'GET':
+        form = PatientForm()
+        return render(request, 'main/add_patient.html', {'form': form})
+
+    if request.method == 'POST':
+        form = PatientForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True, 'message': 'Patient added successfully.'})
+        else:
+            print("Inside add_patient::POST::is_valid::else")
+            print(form.errors)
+        return render(request, 'main/add_patient.html', {'form': form})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
+
+
+@login_required
 def delete_patient(request):
-    if request.method == 'DELETE':
-        # Since we are sending data in the body of a DELETE request, we will
-        # use request.body to get the data instead of request.POST
+    if request.method == 'POST':
         data = json.loads(request.body)
         patient_id = data.get('patient_id')
 
@@ -181,31 +199,14 @@ def delete_patient(request):
 
         try:
             patient = Patient.objects.get(id=patient_id)
+            message = f'Patient {patient.name} (ID: {patient_id}) deleted successfully.'
             patient.delete()
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'message': message})
         except Patient.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-@login_required
-@require_http_methods(["POST"])
-def add_patient(request):
-    if request.method == 'POST':
-        patient_data = {
-            'first_name': request.POST.get('first_name'),
-            'last_name': request.POST.get('last_name'),
-            'date_of_birth': request.POST.get('date_of_birth'),
-            'active': request.POST.get('active', False)
-        }
-
-        try:
-            patient = Patient(**patient_data)
-            patient.save()
-            return JsonResponse({'success': True})
-        except Exception as e:
-            return JsonResponse({'success': False, 'error': str(e)}, status=400)
-    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)
 
 @login_required
 @require_http_methods(["GET"])
@@ -229,40 +230,20 @@ def get_patient(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
+
 @login_required
-@require_http_methods(["PUT"])
-def edit_patient(request):
-    # Parse the URL-encoded data
-    data = urllib.parse.parse_qs(request.body.decode('utf-8'))
+def edit_patient(request, pk):
+    if request.method == 'GET':
+        patient = Patient.objects.get(pk=pk)
+        form = PatientForm(instance=patient)
+        return render(request, 'main/edit_patient.html', {'form': form})
 
-    # Clean and convert data
-    patient_data = {}
-    for key, value in data.items():
-        patient_data[key] = value[0].strip().strip('"')
+    if request.method == 'POST':
+        patient = Patient.objects.get(pk=pk)
+        form = PatientForm(request.POST, instance=patient)
+        if form.is_valid():
+            form.save()
+            return JsonResponse({'success': True})
+        return render(request, 'main/edit_patient.html', {'form': form})
 
-    if 'active' not in data.keys():
-        patient_data['active'] = False
-    else:
-        patient_data['active'] = True
-
-    patient_id = patient_data.get('patient_id')
-    if not patient_id:
-        return JsonResponse({'success': False, 'error': 'Patient ID is required.'}, status=400)
-
-    try:
-        # Retrieve the Patient object
-        patient = Patient.objects.get(id=patient_id)
-
-        # Update the Patient object
-        for key, value in patient_data.items():
-            if hasattr(patient, key):
-                setattr(patient, key, value)
-
-        # Save changes
-        patient.save()
-        return JsonResponse({'success': True, 'message': 'Patient updated successfully.'})
-
-    except Patient.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'Patient not found.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=400)

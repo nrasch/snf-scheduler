@@ -55,136 +55,29 @@
     </table>
 
     <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addPatientModal">
-        Add Patient
-    </button>
+    <button type="button" class="btn btn-primary mt-3" id="loadPatientModalBtn">Add Patient</button>
     <button type="button" class="btn btn-secondary mt-3" id="refreshData">
         Refresh Data
     </button>
 
     <!-- Modal for Adding Patients -->
-    <div class="modal fade" id="addPatientModal" tabindex="-1" aria-labelledby="addPatientModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addPatientModalLabel">Add New Patient</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" id="patientForm">
-                        {% csrf_token %}
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="patient_first_name" class="form-label">Patient First Name</label>
-                                <input type="text" class="form-control" id="patient_first_name" name="first_name" required aria-describedby="firstNameHelp">
-                                <div id="firstNameHelp" class="form-text">Enter the first name of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="patient_last_name" class="form-label">Patient Last Name</label>
-                                <input type="text" class="form-control" id="patient_last_name" name="last_name" required aria-describedby="lastNameHelp">
-                                <div id="lastNameHelp" class="form-text">Enter the last name of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="patient_address" class="form-label">Address</label>
-                                <input type="text" class="form-control" id="patient_address" name="address" required aria-describedby="addressHelp">
-                                <div id="addressHelp" class="form-text">Please provide the complete address of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="patient_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="patient_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
-                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="patient_date_of_birth" class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="patient_date_of_birth" name="date_of_birth" required aria-describedby="dobHelp">
-                                <div id="dobHelp" class="form-text">Enter the patient's date of birth.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="patient_active" class="form-label">Active</label>
-                                <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" id="patient_active" name="active" aria-describedby="activeHelp">
-                                </div>
-                                <div id="activeHelp" class="form-text">Check this if the patient is currently active.</div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="patientForm" class="btn btn-primary" id="addPatient">Add Patient</button>
-                </div>
-            </div>
-        </div>
+    <div id="addPatientModalContainer">
     </div>
 
     <!-- Modal for Editing Patients -->
-    <div class="modal fade" id="editPatientModal" tabindex="-1" aria-labelledby="editPatientModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editPatientModalLabel">Edit Patient</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form method="post" id="editPatientForm">
-                        {% csrf_token %}
-                        <input type="hidden" id="edit_patient_id" name="patient_id">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="edit_patient_first_name" class="form-label">Patient First Name</label>
-                                <input type="text" class="form-control" id="edit_patient_first_name" name="first_name" required aria-describedby="firstNameHelp">
-                                <div id="firstNameHelp" class="form-text">Enter the first name of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_patient_last_name" class="form-label">Patient Last Name</label>
-                                <input type="text" class="form-control" id="edit_patient_last_name" name="last_name" required aria-describedby="lastNameHelp">
-                                <div id="lastNameHelp" class="form-text">Enter the last name of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_patient_address" class="form-label">Address</label>
-                                <input type="text" class="form-control" id="edit_patient_address" name="address" required aria-describedby="addressHelp">
-                                <div id="addressHelp" class="form-text">Please provide the complete address of the patient.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_patient_phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" id="edit_patient_phone" name="phone" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" value="000-000-0000" required aria-describedby="phoneHelp">
-                                <div id="phoneHelp" class="form-text">Format: XXX-XXX-XXXX</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="edit_patient_date_of_birth" class="form-label">Date of Birth</label>
-                                <input type="date" class="form-control" id="edit_patient_date_of_birth" name="date_of_birth" required aria-describedby="dateOfBirthHelp">
-                                <div id="dateOfBirthHelp" class="form-text">Enter the patient's date of birth.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check">
-                                    <label class="form-check-label" for="edit_patient_active">Active</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="edit_patient_active" name="active" aria-describedby="activeHelp">
-                                    </div>
-                                    <div id="activeHelp" class="form-text">Check this if the patient is currently active.</div>
-                                </div>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" form="editPatientForm" class="btn btn-primary" id="updatePatient">Update Patient</button>
-                </div>
-            </div>
-        </div>
+    <div id="editPatientModalContainer">
     </div>
+
 
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdn.datatables.net/v/bs5/jq-3.7.0/dt-2.2.0/datatables.min.js"></script>
-
 <script>
 $(document).ready(function() {
-    // TABLE INIT for Patients
-    const table = $('#patient-table').DataTable({
+    // DATATABLE INIT FOR PATIENT TABLE
+    window.patientTable = $('#patient-table').DataTable({
         ajax: {
             url: "{% url 'main:list_patients' %}",
             type: "GET",
@@ -217,117 +110,21 @@ $(document).ready(function() {
     });
 
 
-    // ADD
-    $('#addPatient').on('click', function (e) {
-        e.preventDefault();
-        var formData = $('#patientForm').serialize();
-
-        $.ajax({
-            url: "{% url 'main:add_patient' %}",
-            type: "POST",
-            data: formData,
-            success: function(response) {
-                console.log("Patient added successfully");
-                $('#addPatientModal').modal('hide');
-                $('#patientForm')[0].reset();
-                var toastElement = $('#patientToast');
-                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
-                $("#toastMessage").text("Patient has been added successfully.");
-                toast.show();
-                table.ajax.reload();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error adding patient:', error);
-            }
-        });
-    });
-
-    // DELETE
-    // Notes:  When sending data with a DELETE request via AJAX, Django doesn't automatically parse the request body
-    // into request.POST like it does with POST requests. Thus, we need to manually create the JSON object and send it
-    // below via JSON.stringify
-    $('#patient-table tbody').on('click', '.delete-btn', function (e) {
-
-        var row = table.row($(this).closest('tr')); // Capture the row before the AJAX call
-        var data = row.data();
-        var patientID = data.id;
-
-        console.log("Deleting Patient with ID:", patientID);
-
-        $.ajax({
-            url: "{% url 'main:delete_patient' %}",
-            type: "DELETE",
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "Content-Type": "application/json"
-            },
-            data: JSON.stringify({ 'patient_id': patientID }),
-            success: function(response) {
-                console.log("Patient deleted successfully");
-                var toastElement = $('#patientToast');
-                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
-                $("#toastMessage").text("Patient with ID " + patientID + " has been removed successfully.");
-                toast.show();
-
-                // Remove the row from the table
-                row.remove().draw(false);
-            },
-            error: function(xhr, status, error) {
-                console.error('Error:', error);
-            }
-        });
-    });
-
-    // REFRESH
+    // REFRESH PATIENT DATATABLE
     $('#refreshData').on('click', function() {
-        table.ajax.reload();
+        window.patientTable.ajax.reload();
     });
-
-
-    // EDIT (Show modal to edit SNF)
-    $('#patient-table tbody').on('click', '.edit-btn', function (e) {
-        console.log("Edit button clicked");
-        e.preventDefault();
-        var data = table.row($(this).parents('tr')).data();
-        console.log(data);
-        $('#edit_patient_id').val(data.id);
-        $('#edit_patient_first_name').val(data.first_name);
-        $('#edit_patient_last_name').val(data.last_name);
-        $('#edit_patient_address').val(data.address);
-        $('#edit_patient_date_of_birth').val(data.date_of_birth);
-        $('#edit_patient_active').prop('checked', data.active);
-        $('#editPatientModal').modal('show');
-    });
-
-
-    // UPDATE (Submit edit form)
-    $('#updatePatient').on('click', function (e) {
-        e.preventDefault();
-        var formData = $('#editPatientForm').serialize();
-
-        $.ajax({
-            url: "{% url 'main:edit_patient' %}",
-            type: "PUT",
-            data: formData,
-            headers: {
-                "X-CSRFToken": "{{ csrf_token }}",
-                "X-HTTP-Method-Override": "PUT"
-            },
-            success: function(response) {
-                console.log("Patient updated successfully");
-                $('#editPatientModal').modal('hide');
-                var toastElement = $('#patientToast');
-                var toast = new bootstrap.Toast(toastElement, { delay: 5000 });
-                $("#toastMessage").text("Patient has been updated successfully.");
-                toast.show();
-                table.ajax.reload();
-            },
-            error: function(xhr, status, error) {
-                console.error('Error updating Patient:', error);
-            }
-        });
-    });
-
 });
 </script>
+<script>
+    // Define any Django template tag values that need to be passed to the JavaScript files loaded later below
+    var addPatientUrl = "{% url 'main:add_patient' %}";
+    var deletePatientUrl = "{% url 'main:delete_patient' %}";
+    var csrfToken = "{{ csrf_token }}";
+
+    console.log("addPatientUrl: " + addPatientUrl);
+    console.log("deletePatientUrl: " + deletePatientUrl);
+    console.log("csrfToken: " + csrfToken);
+</script>
+<script src="{% static 'main/js/add_patient.js' %}"></script>
 {% endblock %}
