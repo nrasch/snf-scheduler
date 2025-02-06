@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 import json
-import urllib.parse
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import SNFForm, PatientForm
 
@@ -236,7 +235,8 @@ def edit_patient(request, pk):
     if request.method == 'GET':
         patient = Patient.objects.get(pk=pk)
         form = PatientForm(instance=patient)
-        return render(request, 'main/edit_patient.html', {'form': form})
+        form.id = patient.id
+        return render(request, 'main/edit_patient.html', {'form': form, 'patient': patient})
 
     if request.method == 'POST':
         patient = Patient.objects.get(pk=pk)

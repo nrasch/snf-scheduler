@@ -1,29 +1,28 @@
-$(document).ready(function() {
+ $(document).ready(function() {
     // Ensure the patientTable is defined before adding event handlers
     if (window.patientTable) {
-        console.log('Patient table is defined.  Adding event handlers');
-        // ADDING NEW PATIENT PATIENT
+        console.log('Patient table is defined.  Adding add event handlers.  V1.0.0');
         // Function to handle modal display and setup
-        function setupModal(response) {
+        function setupAddModal(response) {
+            console.log('Setting up add modal...');
             $('#addPatientModalContainer').html(response);
-            modalBtnMappings();
+            addModalBtnMappings();
             initAddModal();
             $('#addPatientModal').modal({backdrop: true, keyboard: true});
             $('#addPatientModal').modal('show');
         }
 
         // Function to clear modal and backdrop
-        function clearModal() {
-            $('#addPatientModal').modal('dispose');
-            $('.modal-backdrop').remove();
-            $('#addPatientModal').remove();
+        console.log('Adding clearAddModal function...');
+        function clearAddModal() {
+            $('#addPatientModal').modal('hide');
         }
 
         // Function cancel patient addition and clear the modal form
-        function modalBtnMappings() {
+        function addModalBtnMappings() {
             $("#cancelPatientBtn").off('click.cancelPatientHandler').on('click.cancelPatientHandler', function() {
                 console.log('Cancelling patient addition...');
-                clearModal();
+                clearAddModal();
             });
         }
 
@@ -67,7 +66,7 @@ $(document).ready(function() {
                                 // Remove the modal backdrop to avoid stacking (in case of multiple modal openings)
                                 $('.modal-backdrop').remove();
                                 // Re-setup the modal with error details for user to correct
-                                setupModal(response);
+                                setupAddModal(response);
                             }
                         },
                         // Handle any errors from the AJAX request
@@ -79,16 +78,17 @@ $(document).ready(function() {
         }
 
         // Load and display the patient modal
-        $('#loadPatientModalBtn').on('click', function(e) {
+        $('#loadAddPatientModalBtn').on('click', function(e) {
             // URL for the server endpoint to retrieve the modal content
             var url = addPatientUrl;
+
             // AJAX call to obtain the modal content
             $.ajax({
                 url: url,
                 type: "GET",
                 success: function(response) {
                     // Add event handlers to the modal buttons since we are adding dynamically
-                    setupModal(response);
+                    setupAddModal(response);
                 },
                 error: function(xhr, status, error) {
                     // Handle any errors from the AJAX request
@@ -101,6 +101,7 @@ $(document).ready(function() {
         // DELETE PATIENT
         // Using $(document) to attach event handler since this javascript is being included
         // in a separate file and the patient table is being loaded dynamically
+        console.log('Adding delete event handler...');
         $(document).on('click', '#patient-table tbody .delete-btn', function(e) {
 
             console.log("Delete button clicked");
@@ -110,7 +111,7 @@ $(document).ready(function() {
             var data = row.data();
 
             // Extract the patient ID from the row data
-            var patientID = data.id;
+            patientID = data.id;
 
             console.log("Deleting Patient with ID:", patientID);
 

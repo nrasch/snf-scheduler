@@ -55,7 +55,7 @@
     </table>
 
     <!-- Button trigger modal -->
-    <button type="button" class="btn btn-primary mt-3" id="loadPatientModalBtn">Add Patient</button>
+    <button type="button" class="btn btn-primary mt-3" id="loadAddPatientModalBtn">Add Patient</button>
     <button type="button" class="btn btn-secondary mt-3" id="refreshData">
         Refresh Data
     </button>
@@ -77,6 +77,7 @@
 <script>
 $(document).ready(function() {
     // DATATABLE INIT FOR PATIENT TABLE
+    // Create global variable, so we can access in other scripts loaded further below
     window.patientTable = $('#patient-table').DataTable({
         ajax: {
             url: "{% url 'main:list_patients' %}",
@@ -112,19 +113,25 @@ $(document).ready(function() {
 
     // REFRESH PATIENT DATATABLE
     $('#refreshData').on('click', function() {
+        // Reload the patient table data
         window.patientTable.ajax.reload();
     });
+
 });
 </script>
 <script>
     // Define any Django template tag values that need to be passed to the JavaScript files loaded later below
     var addPatientUrl = "{% url 'main:add_patient' %}";
+    var editPatientUrl = "{% url 'main:edit_patient' 0 %}";
     var deletePatientUrl = "{% url 'main:delete_patient' %}";
+    var patientID = 0;
     var csrfToken = "{{ csrf_token }}";
 
     console.log("addPatientUrl: " + addPatientUrl);
+    console.log("editPatientUrl: " + editPatientUrl);
     console.log("deletePatientUrl: " + deletePatientUrl);
     console.log("csrfToken: " + csrfToken);
 </script>
 <script src="{% static 'main/js/add_patient.js' %}"></script>
+<script src="{% static 'main/js/edit_patient.js' %}"></script>
 {% endblock %}

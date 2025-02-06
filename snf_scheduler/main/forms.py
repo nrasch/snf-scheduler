@@ -47,11 +47,6 @@ class SNFForm(forms.ModelForm):
             },
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'snf_id' in self.data:
-            self.fields['snf_id'].required = True
-
     def clean_phone(self):
         phone = self.cleaned_data['phone']
         # Basic phone number validation (you can use a more robust regex)
@@ -101,8 +96,3 @@ class PatientForm(forms.ModelForm):
                 'invalid': "Enter a valid date.",
             }
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if 'snf_id' in self.data:
-            self.fields['patient_id'].required = True
